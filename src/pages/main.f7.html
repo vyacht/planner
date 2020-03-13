@@ -1,0 +1,573 @@
+<template>
+    <div class="page" data-name="main">
+        <div class="page-content">
+            <div class="demo-map-container" style="z-index: 0; height: 100%"></div>
+
+            <div class="card" style="position: absolute; z-index: 2; width: 80%; left: 32px; top: 6px;">
+                <div class="card-content" style="background-color: white; ">
+
+                    <div class="list no-hairlines">
+                        <ul>
+                            <li class="item-content">
+
+                                <div class="item-media">
+
+                                    <div class="menu">
+                                        <div class="menu-inner">
+                                            <a href="#" class="menu-item icon-only panel-open" data-panel="left">
+                                                <div class="menu-item-content icon-only"
+                                                    style="background: white; color: gray;">
+                                                    <i class="icon material-icons">menu</i>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="item-inner">
+                                    <input id="autocomplete-dropdown-expand-to-dest" type="text"
+                                        style="color: black; align-items: left;" placeholder="Search your destination">
+                                    <span class="input-clear-button"></span>
+                                </div>
+
+                                <div class="item-after">
+                                    <div class="menu" style="align-items: right;">
+                                        <div class="menu-inner">
+                                            <a class="menu-item" @Click='closeAndRoute("home")'>
+                                                <div class="menu-item-content icon-only"
+                                                    style="background: white; color: #4285F4;">
+                                                    <i class="icon material-icons">directions</i>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div id="sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
+
+            <div class="sheet-modal-inner">
+
+                <div class="swipe-handler" @click="toggleSwipeStep"></div>
+
+                <div class="sheet-modal-swipe-step">
+                    <div class="margin-top text-align-center">{{stopArea.name}}</div>
+
+                    <div class="list no-hairlines" style="margin:12px">
+                        <ul>
+                            {{#if linesBus}}
+                            <li class="item-content">
+                                <div class="item-media">
+                                    <i class="icon material-icons" style="background: white; color: #4285F4;">
+                                        directions_bus</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        <div class="item-header">Bus</div>
+                                        <div style="overflow-x: auto; overflow-y: hidden;">
+                                            {{#each linesBus}}
+                                            {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
+                                            {{/each}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </li>
+                            {{/if}}
+                            {{#if linesTrain}}
+                            <li class="item-content">
+                                <div class="item-media">
+                                    <i class="icon material-icons" style="background: white; color: #4285F4;">
+                                        directions_train</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title">
+                                        <div class="item-header">Train</div>
+                                        {{#each linesTrain}}
+                                        {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </li>
+                            {{/if}}
+                        </ul>
+                    </div>
+
+                    <!-- 
+                    <div class="padding-horizontal padding-bottom">
+                        <div class="margin-top text-align-center">Swipe up for more details</div>
+                    </div>
+                        -->
+                </div>
+
+                <!-- 
+                <div class="block-title block-title-small margin-top">Next departures:</div>
+                -->
+
+                {{#if departures}}
+
+                <!-- 
+                    <div class="navbar">
+                        <div class="navbar-bg"></div>
+                        <div class="navbar-inner sliding">
+                            <div class="title sliding">Next departures</div>
+                        </div>
+                    </div>
+                    -->
+                <div class="long-seperator"></div>
+                <div class="list no-hairlines" style="margin:12px;">
+                    <ul>
+                        {{mainDepartureList departures filteredDepartures lineFilter}}
+                    </ul>
+                </div>
+
+            </div>
+            {{/if}}
+        </div>
+
+
+    </div>
+    </div>
+</template>
+<script>
+    export default {
+        data: function () {
+            return {
+                mapStyleLoaded: false,
+                mapScriptLoaded: false,
+                mapInitialized: false,
+                mymap: {},
+                markerLayerGroup: {},
+                stopArea: {},
+                linesBus: null,
+                linesTrain: null,
+                linesFerry: [],
+                departures: null,
+                departuresByLine: null,
+                lineFilter: null,
+                filteredDepartures: null
+            }
+        },
+        methods: {
+            /* iterative through all pages */
+            toggleLineFilter: function (lineId) {
+
+                var fstate = null;
+                if (!this.lineFilter) {
+                    console.log("Filter on (%s)", lineId);
+                    fstate = lineId;
+                } else {
+                    if (this.lineFilter == lineId) {
+                        console.log("Filter off");
+                        fstate = null;
+                    } else {
+                        console.log("Filter change (%s)", lineId);
+                        fstate = lineId;
+                    }
+                }
+
+                var filteredDepartures = [];
+                this.departuresByLine.forEach(departure => {
+                    if (departure.lineId == lineId) {
+                        departure.departureTimes.forEach(dt => {
+                            filteredDepartures.push({
+                                type: departure.type,
+                                direction: departure.direction,
+                                label: departure.label,
+                                departureTime: dt,
+                            });
+                        });
+                    }
+                });
+
+                filteredDepartures.sort(function(a, b) {
+                    return a.departureTime.unix() - b.departureTime.unix();
+                });
+
+                this.$setState({
+                    lineFilter: fstate,
+                    filteredDepartures: filteredDepartures
+                });
+            },
+            getDepartures: function (stopArea) {
+                var self = this;
+                var app = self.$app;
+
+                var departuresUrl =
+                    'http://localhost:9191/v1/coverage/default/stop_areas/' +
+                    stopArea.id +
+                    "/departures";
+
+                app.request({
+                    url: departuresUrl,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var deps = [];
+                        console.log(data);
+                        data.departures.forEach(e => {
+
+                            var dt = moment(e.stop_date_time.departure_date_time,
+                                "YYYYMMDDThhmmss");
+
+                            var label = e.route.line.name;
+                            if (!label) {
+                                label = e.route.line.code;
+                            }
+
+                            deps.push({
+                                direction: e.display_informations.direction,
+                                type: e.display_informations
+                                    .commercial_mode, // Bus, Train, ...
+                                id: e.route.line.id,
+                                label: label,
+                                departureTime: dt,
+                            });
+                        });
+                        self.$setState({
+                            departures: deps.slice(0, 3)
+                        });
+                    }
+                });
+
+            },
+            getLines: function (page, llines, stopArea, departures) {
+                var self = this;
+                var app = self.$app;
+
+                var stopSchedulesUrl =
+                    'http://localhost:9191/v1/coverage/default/stop_areas/' +
+                    stopArea.id +
+                    "/stop_schedules";
+
+                if (page > 0) {
+                    stopSchedulesUrl += "?start_page=" + page;
+                } else {
+                    llines = {};
+                }
+
+                //console.log("loop lines page = %d %s", page, stopSchedulesUrl);
+
+                /* get all stop schedules that contain all lines */
+
+                app.request({
+                    url: stopSchedulesUrl,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        // Find matched items
+                        self.sheetSwipeToStep.open();
+
+                        /*
+                            we do extraction on labels for lines in two steps:
+                            - lines are listed multiple times
+                            - use a dictionary to get distinct lines ids and 
+                              their print label (code or name)
+                            - then transfer distinct lines to a normal array of 
+                              objects for display
+
+                            (this is because T7 can't do dicts imho)
+                        */
+
+                        data.stop_schedules.forEach(e => {
+                            var l = e.route.line;
+
+                            if (e.additional_informations != "no_departure_this_day") {
+                                var type = l.commercial_mode.name;
+                                var label = l.name;
+                                if (!label) {
+                                    label = l.code;
+                                }
+                                if (!(type in llines)) llines[type] = [];
+                                if (!(l.id in llines[type])) {
+                                    llines[type][l.id] = label;
+                                }
+
+                                var dts = [];
+                                e.date_times.forEach(st => {
+                                    var dt = moment(st.date_time, "YYYYMMDDThhmmss");
+                                    dts.push(dt);
+                                });
+
+                                departures.push({
+                                    direction: e.display_informations.direction,
+                                    type: type,
+                                    lineId: l.id,
+                                    label: label,
+                                    departureTimes: dts,
+                                });
+                            }
+                        });
+
+                        if (data.pagination.items_on_page == data.pagination.items_per_page) {
+
+                            self.getLines(page + 1, llines, stopArea, departures);
+
+                        } else {
+                            /* iterative loop stop condition 
+                            
+                                - shovel distinct list of lines over to normal array
+                            */
+
+                            // stupid but it seems template7 does not understand dicts
+                            var ll = {};
+                            for (var t in llines) {
+                                // iterate all types (Bus, Train ...)
+                                if (!(t in ll)) ll[t] = [];
+                                for (var lid in llines[t]) {
+                                    // get the label for each line id
+                                    ll[t].push({
+                                        label: llines[t][lid],
+                                        id: lid
+                                    });
+                                }
+                            }
+
+                            self.$setState({
+                                // maintain null for not set for T7
+                                linesBus: ("Bus" in ll) ? ll["Bus"] : null,
+                                linesTrain: ("Train" in ll) ? ll["Train"] : null,
+                                stopArea: stopArea,
+                                departuresByLine: departures
+                            });
+                            //console.log(self.stopArea, self.linesBus, self.linesTrain);
+                        }
+                    }
+                });
+            },
+            updatePlace: function (place) {
+
+                console.log("PLACE: ", place)
+
+                // place can be anything
+                var stopArea = place.stop_area;
+
+                var pos = [stopArea.coord.lat, stopArea.coord.lon];
+
+                var self = this;
+                var app = self.$app;
+
+                // set marker and center map view
+                self.mymap.setView(pos, 15);
+                self.markerLayerGroup.clearLayers();
+                L.marker(pos).addTo(self.markerLayerGroup);
+
+                var llines = {};
+                var departures = [];
+
+                self.getLines(0, llines, stopArea, departures);
+                self.getDepartures(stopArea);
+
+                this.$root.$setState({
+                    toJourney: {
+                        type: "stop_area",
+                        place: stopArea
+                    }
+                });
+            },
+            closeAndRoute: function (route) {
+                // there is probably more elgant ways to route and close
+
+                var self = this;
+                var app = self.$app;
+
+                //console.log("open journey", this.journeys[id]);
+
+                if (self.sheetSwipeToStep) {
+                    self.sheetSwipeToStep.close();
+                    /* destroy has several issues: doesn't seem
+                       to work, and makes seemingly unrelated autocomplete go bogus */
+                    //self.sheetSwipeToStep.destroy();
+                }
+                app.views.main.router.navigate({
+                    name: route,
+                    /*
+                    params: {
+                        journeyId: toString(id),
+                    },
+                    */
+                });
+            },
+            toggleSwipeStep: function () {
+                this.sheetSwipeToStep.stepToggle();
+            },
+            loadMapAssets: function () {
+
+                var self = this;
+                var style = document.createElement('link');
+                style.rel = 'stylesheet';
+                style.href = 'https://unpkg.com/leaflet@1.4.0/dist/leaflet.css';
+                style.integrity =
+                    'sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==';
+                style.setAttribute('crossorigin', '')
+                style.onload = function () {
+                    self.mapStyleLoaded = true;
+                    if (self.mapScriptLoaded) self.initMap();
+                }
+                document.head.appendChild(style);
+
+                var script = document.createElement('script');
+                script.src = 'https://unpkg.com/leaflet@1.4.0/dist/leaflet.js';
+                script.integrity =
+                    'sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==';
+                script.setAttribute('crossorigin', '')
+                script.onload = function () {
+                    self.mapScriptLoaded = true;
+                    if (self.mapStyleLoaded) self.initMap();
+                }
+                document.head.appendChild(script);
+            },
+            initMap: function () {
+                var self = this;
+                self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
+                    zoomControl: false
+                }).setView([59.8, 17.6], 10);
+                var topoUrl = 'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+                var topoAttribution =
+                    'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
+
+                L.tileLayer(
+                    topoUrl, {
+                        maxZoom: 18,
+                        attribution: topoAttribution,
+                        id: 'mapbox.streets'
+                    }).addTo(self.mymap);
+
+                self.markerLayerGroup = L.layerGroup().addTo(self.mymap);
+                self.mapInitialized = true;
+            },
+        },
+        on: {
+            pageInit: function () {
+
+                console.log("PAGE INIT");
+
+
+                var self = this;
+                var app = self.$app;
+
+                var placesURL = "http://localhost:9191/v1/coverage/default/places";
+                var acTempl = {
+                    inputEl: '#autocomplete-dropdown-expand-to-dest',
+                    openIn: 'dropdown',
+                    preloader: true, //enable preloader
+                    /* If we set valueProperty to "id" then input value on select will be set according to this property */
+                    valueProperty: 'name', //object's "value" property name
+                    textProperty: 'name', //object's "text" property name
+                    limit: 20, //limit to 20 results
+                    typeahead: false,
+                    dropdownPlaceholderText: '',
+
+                    //value: 'Knivsta station (Knivsta)',// this.$root.toJourney?this.$root.toJourney:'',
+
+                    // overloading renderItem in order to add icons for place, stoparea, ...
+                    renderItem: function (item, index) {
+                        const ac = this;
+                        //if (ac.params.renderItem) return ac.params.renderItem.call(ac, item, index);
+                        let itemHtml;
+                        const itemValue = item.value && typeof item.value === 'string' ? item.value.replace(
+                            /"/g, '&quot;') : item.value;
+                        // we only do the dropdown case here, for details see autocomplete-class.js renderItem()
+                        if (item.placeholder) {
+                            // Dropwdown placeholder
+                            itemHtml = `
+                                <li class="autocomplete-dropdown-placeholder">
+                                <label class="item-content">
+                                    <div class="item-inner">
+                                    <div class="item-title">${item.text}</div>
+                                    </div>
+                                </label>
+                                </li>
+                            `;
+                            return itemHtml.trim();
+                        }
+                        itemHtml = `
+                            <li>
+                            <label class="item-radio item-content" data-value="${itemValue}">
+                                <div class="item-media">
+                                    <i class="icon f7-icons if-not-md">plus_circle</i>
+                                        <i class="icon material-icons md-only">directions_bus</i>
+                                </div>
+                                <div class="item-inner">
+                                        <div class="item-title">${item.text}</div>
+                                </div>
+                            </label>
+                            </li>
+                        `;
+                        return itemHtml.trim();
+                    },
+                    source: function (query, render) {
+                        var autocomplete = this;
+                        var results = [];
+                        if (query.length === 0) {
+                            render(results);
+                            return;
+                        }
+                        // Show Preloader
+                        autocomplete.preloaderShow();
+
+                        // Do Ajax request to Autocomplete data
+                        app.request({
+                            url: placesURL,
+                            method: 'GET',
+                            dataType: 'json',
+                            //send "query" to server. Useful in case you generate response dynamically
+                            data: {
+                                q: query,
+                            },
+                            success: function (data) {
+                                // Find matched items
+                                render(data.places);
+                                autocomplete.preloaderHide();
+                            }
+                        });
+                    },
+                    on: {
+                        change: function (value) {
+                            self.updatePlace(value[0]);
+                        }
+                    }
+                };
+                var acFrom = app.autocomplete.create(acTempl);
+
+                if (!self.sheetSwipeToStep) {
+                    self.sheetSwipeToStep = self.$app.sheet.create({
+                        el: '.demo-sheet-swipe-to-step',
+                        backdrop: false,
+                        swipeToClose: true,
+                        swipeToStep: true,
+                        push: true,
+                    });
+                    // self.sheetSwipeToStep.open();
+                }
+
+            },
+            pageAfterIn: function () {
+                var self = this;
+                if (self.mapInitialized) return;
+                if (!window.L) {
+                    self.loadMapAssets();
+                    return;
+                }
+                self.initMap();
+            },
+            pageBeforeOut: function () {
+                var self = this;
+                if (self.sheetSwipeToStep) self.sheetSwipeToStep.close();
+            },
+            pageBeforeRemove: function () {
+                var self = this;
+                // Destroy sheet modal when page removed
+                if (self.sheetSwipeToStep) self.sheetSwipeToStep.destroy();
+            },
+        },
+    }
+</script>

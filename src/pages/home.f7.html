@@ -1,0 +1,441 @@
+<template>
+    <div class="page" data-name="home">
+
+
+
+        <!-- Top Navbar -->
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner sliding">
+                <div class="left">
+                    <a href="#" class="link back panel-close">
+                        <i class="icon icon-back"></i>
+                        <span class="if-not-md">Back</span>
+                    </a>
+                </div>
+                <div class="title sliding">Plan journey</div>
+                <div class="right">
+                    <a href="#" class="link icon-only login-open" data-panel="right">
+                        <i class="icon f7-icons if-not-md">menu</i>
+                        <i class="icon material-icons if-md">account_circle</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Fixed Toolbar 
+        <div class="toolbar toolbar-bottom" style="height: 100px;">
+            <div class="toolbar-inner" style="padding: 16px;">
+                <div>&nbsp;</div>
+                <a href="/buy-ticket/" class="col button button-raised button-fill" style="width: 128px; display:flex;">
+                    <i class="icon f7-icons if-not-md">menu</i>
+                    <i class="icon material-icons if-md">card_travel</i>
+                    <span>Buy ticket</span>
+                </a>
+            </div>
+        </div>
+        -->
+
+        <div class="page-content">
+
+            <!-- searchbox from to start -->
+            <div class="card demo-card-header-pic">
+
+                <div class="card-content card-content-padding">
+                    <div class="list no-hairlines-md">
+                        <ul>
+                            <li class="item-content item-input">
+                                <div class="item-inner">
+                                    <div class="item-title item-label">From</div>
+                                    <div class="item-input-wrap">
+                                        <input id="autocomplete-dropdown-expand-from" type="text" placeholder="From">
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                </div>
+                                <div class="item-after" style="padding: 8px;">
+                                    <i class="icon f7-icons if-not-md">plus_circle</i>
+                                    <i class="icon material-icons md-only">gps_fixed</i>
+                                </div>
+                            </li>
+                            <li class="item-content item-input">
+                                <div class="item-inner">
+                                    <div class="item-title item-label">To</div>
+                                    <div class="item-input-wrap">
+                                        <input id="autocomplete-dropdown-expand-to" 
+                                            type="text" placeholder="To" value="">
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                </div>
+                                <div class="item-after" style="padding: 8px;">
+                                    <i class="icon f7-icons if-not-md">arrow_up_arrow_down</i>
+                                    <i class="icon material-icons md-only">import_export</i>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div>
+                        <!-- need this here to avoid distributing chips left and right-->
+                        <div class="chip">
+                            <div class="chip-media bg-color-black">
+                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                <i class="icon material-icons md-only">home</i>
+                            </div>
+                            <div class="chip-label">Home</div>
+                        </div>
+                        <div class="chip">
+                            <div class="chip-media bg-color-black">
+                                <i class="icon f7-icons if-not-md">compass</i>
+                                <i class="icon material-icons md-only">work</i>
+                            </div>
+                            <div class="chip-label">Work</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- searchbox from to end -->
+
+            <!-- Scrollable page content-->
+            {{#each journeys}}
+            <!-- <a data-reload-detail="true" href="/journey/journey/{{this.journey_from_station}}/" style="color: var(--f7-text-color)">
+            -->
+            <!-- comp the link color -->
+            <div class="card demo-card-header-pic" @click="openJourney({{@index}})">
+                <div class="card-content card-content-padding">
+                    <div class="row align-items-stretch" style="border: 1px;">
+                        <div class="col" style="width: 80%; min-width: 50px;">
+                            <div class="row">
+                                <div class="col">{{inTime}}<p></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col" style="width:20%; ">{{departureTime}}</div>
+                                <div class="col" style="width:80%; ">{{journey_from_station}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col" style="width:20%; "></div>
+                                <div class="col" style="width:80%; ">
+                                    <div style="padding:10px;">
+                                        {{#each sections}}
+                                        {{#js_if "this.type === 'public_transport'"}}
+                                        {{#js_if "this.mode === 'Train'"}}
+                                        <div class="chip">
+                                            <div class="chip-media bg-color-black">
+                                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                                <i class="icon material-icons md-only">directions_train</i>
+                                            </div>
+                                            <div class="chip-label">{{this.name}}</div>
+                                        </div>
+                                        {{/js_if}}
+                                        {{#js_if "this.mode === 'Bus'"}}
+                                        <div class="chip">
+                                            <div class="chip-media bg-color-black">
+                                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                                <i class="icon material-icons md-only">directions_bus</i>
+                                            </div>
+                                            <div class="chip-label">{{this.name}}</div>
+                                        </div>
+                                        {{/js_if}}
+                                        {{/js_if}}
+                                        {{#js_if "this.type === 'transfer'"}}
+                                        <div class="chip">
+                                            <div class="chip-media bg-color-black">
+                                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                                <i class="icon material-icons md-only">directions_walk</i>
+                                            </div>
+                                            <div class="chip-label">{{this.duration}}min</div>
+                                        </div>
+                                        {{/js_if}}
+                                        {{#js_if "this.type === 'waiting'"}}
+                                        <div class="chip">
+                                            <div class="chip-media bg-color-black">
+                                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                                <i class="icon material-icons md-only">hourglass_empty</i>
+                                            </div>
+                                            <div class="chip-label">{{this.duration}}min</div>
+                                        </div>
+                                        {{/js_if}}
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col" style="width:20%; ">{{arrivalTime}}</div>
+                                <div class="col" style="width:80%; ">{{journey_to_station}}</div>
+                            </div>
+                        </div>
+                        <div class="col demo-col-center-content" style="width: 20%; min-width: 50px">
+                            {{duration}} <br>SEK 80
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- </a> -->
+            {{/each}}
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        data: function () {
+            var self = this;
+            var app = self.$app;
+            return {
+                allowInfinite: true,
+                hasMoreItems: true,
+                fromSet: false,
+                fromPlace: null,
+                toSet: false,
+                toPlace: null,
+                journeys: [],
+            }
+        },
+        methods: {
+            openJourney: function (id) {
+                var self = this;
+                var app = self.$app;
+
+                //   console.log("open journey", this.journeys[id]);
+                this.$root.$setState({ journey: this.journeys[id] });
+                //self.$root.Store.journey = this.journeys[id];
+
+                app.views.main.router.navigate({
+                    name: 'journey',
+                    params: {
+                        journeyId: toString(id),
+                    },
+                });
+            },
+            updateJourneys: function () {
+
+                var self = this;
+
+                if(!self.toSet || !self.fromSet) return;
+
+                var app = self.$app;
+
+                var from = [59.941710, 17.604303];
+                var to = [59.725600, 17.787895];
+
+                //console.log("UPDATE JOURNEY", self.toPlace);
+
+                var journeyUrl = 'http://localhost:9191/v1/coverage/default/journeys?' +
+                    'from=' + self.fromPlace.place.id +
+                    '&to=' + self.toPlace.place.id +
+                    '&count=3';
+                app.request.get(journeyUrl, function (data) {
+
+                    var jss = [];
+                    var js = JSON.parse(data).journeys;
+
+                    //console.log(js);
+
+                    for (var i = 0; i < js.length; i++) {
+
+                        var j = js[i];
+                        j.departure_date_time;
+                        j.arrival_date_time;
+
+                        if (j.sections.length <= 0) {
+                            return; // nothing to do
+                        }
+
+                        var j1 = {
+                            journey_from_station: j.sections[0].from.name,
+                            journey_to_station: j.sections[j.sections.length - 1].to.name,
+                            duration: Math.round(j.durations.total / 60.0) + "min",
+                            sections: []
+                        };
+
+                        for (var s = 0; s < j.sections.length; s++) {
+                            var ss = j.sections[s];
+
+                            // there are weird sections from station to itself (waiting time?)
+                            if (ss.duration == 0) continue;
+                            var at = moment(ss.arrival_date_time, "YYYYMMDDThhmmss");
+                            var dt = moment(ss.departure_date_time, "YYYYMMDDThhmmss");
+
+
+                            var label = '';
+                            if('display_informations' in ss) {
+                                //console.log("MISSING: ", ss);
+
+                                label = ss.display_informations.name;
+                                if (!label) {
+                                    label = ss.display_informations.label;
+                                }
+                            }
+
+                            var sec = {
+                                type: ss.type,
+                                mode: ss.type == "public_transport" ? 
+                                    ss.display_informations.commercial_mode : "",
+                                duration: Math.round(ss.duration/60),
+                                name: label,
+                                arrivalTime: at.format("HH:mm"),
+                                departureTime: dt.format("HH:mm"),
+                                inTime: at.fromNow()
+                            }
+
+                            console.log(sec);
+
+                            j1.sections.push(sec);
+                        }
+
+                        if(j1.sections.length > 0) {
+                            console.log(j1);
+                            j1.departureTime = j1.sections[0].departureTime;
+                            j1.inTime = j1.sections[0].inTime;
+                            j1.arrivalTime = j1.sections[j1.sections.length - 1].arrivalTime;
+                            jss.push(j1);
+                        }
+
+                        //if (i == 0) break;
+                    }
+
+                    self.$setState({
+                        journeys: jss
+                    });
+                });
+            },
+        },
+        on: {
+            pageInit: function () {
+                var self = this;
+                var app = self.$app;
+                var placesURL = "http://localhost:9191/v1/coverage/default/places";
+                var acTempl = {
+                    inputEl: '#autocomplete-dropdown-expand-from',
+                    openIn: 'dropdown',
+                    preloader: true, //enable preloader
+                    /* If we set valueProperty to "id" then input value on select will be set according to this property */
+                    valueProperty: 'name', //object's "value" property name
+                    textProperty: 'name', //object's "text" property name
+                    limit: 20, //limit to 20 results
+                    typeahead: true,
+                    dropdownPlaceholderText: 'From',
+
+                    // overloading renderItem in order to add icons for place, stoparea, ...
+                    renderItem: function (item, index) {
+                        const ac = this;
+                        //if (ac.params.renderItem) return ac.params.renderItem.call(ac, item, index);
+                        let itemHtml;
+                        const itemValue = item.value && typeof item.value === 'string' ? item.value.replace(
+                            /"/g, '&quot;') : item.value;
+                        // we only do the dropdown case here, for details see autocomplete-class.js renderItem()
+                        if (item.placeholder) {
+                            // Dropwdown placeholder
+                            itemHtml = `
+                                <li class="autocomplete-dropdown-placeholder">
+                                <label class="item-content">
+                                    <div class="item-inner">
+                                    <div class="item-title">${item.text}</div>
+                                    </div>
+                                </label>
+                                </li>
+                            `;
+                            return itemHtml.trim();
+                        }
+                        itemHtml = `
+                            <li>
+                            <label class="item-radio item-content" data-value="${itemValue}">
+                                <div class="item-inner">
+                                    <div style="display: flex;">
+                                        <i class="icon f7-icons if-not-md">plus_circle</i>
+                                        <i class="icon material-icons md-only">directions_bus</i>
+                                        <div class="item-title">${item.text}</div>
+                                    </div>
+                                </div>
+                            </label>
+                            </li>
+                        `;
+                        return itemHtml.trim();
+                    },
+                    source: function (query, render) {
+                        var autocomplete = this;
+                        var results = [];
+                        if (query.length === 0) {
+                            render(results);
+                            return;
+                        }
+                        // Show Preloader
+                        autocomplete.preloaderShow();
+
+                        // Do Ajax request to Autocomplete data
+                        app.request({
+                            url: placesURL,
+                            method: 'GET',
+                            dataType: 'json',
+                            //send "query" to server. Useful in case you generate response dynamically
+                            data: {
+                                q: query,
+                            },
+                            success: function (data) {
+                                render(data.places);
+                                // Hide Preoloader
+                                autocomplete.preloaderHide();
+                            }
+                        });
+                    },
+                    on: {
+                        change: function (value) {
+                            //console.log("ON CHANGE FROM", value[0]);
+                            //console.log("ON CHANGE FROM", self.$root.toJourney);
+                            self.fromSet= true;
+                            self.fromPlace= {
+                                    place: value[0].stop_area,
+                                    type: "stop_area"
+                                };
+
+                            // will call render function 
+                            self.updateJourneys(); 
+                        }
+                    }
+                };
+                var acFrom = app.autocomplete.create(acTempl);
+                acTempl.inputEl = '#autocomplete-dropdown-expand-to';
+                acTempl.dropdownPlaceholderText = 'To';
+                acTempl.on = {
+                    change: function (value) {
+                            self.toSet= true;
+                            self.toPlace= {
+                                    place: value[0].stop_area,
+                                    type: "stop_area"
+                                };
+                        self.updateJourneys();
+                    }
+                };
+
+                if(self.$root.toJourney) {
+                    console.log("PAGE INIT HOME", self.$root.toJourney);
+                    self.toSet= true;
+                    self.toPlace= self.$root.toJourney;
+
+                    //TODO: rendering of value with template
+                    self.$$('#autocomplete-dropdown-expand-to').val(self.$root.toJourney.place.name);
+                }
+
+                var acTo = app.autocomplete.create(acTempl);
+
+                /*self.$setState({
+                    fromPlace: {
+                        id: "stop_area:9021003780438000"
+                    },
+                    toPlace: {
+                        id: "stop_area:9021003780050000"
+                        //id: this.$root.toJourney.id
+                    },
+                })                
+                self.updateJourneys();
+                */
+
+            }
+        },
+    }
+</script>

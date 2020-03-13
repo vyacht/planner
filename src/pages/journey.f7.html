@@ -1,0 +1,106 @@
+<template>
+    <div class="page">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner sliding">
+                <div class="left">
+                    <a href="#" class="back link">
+                        <i class="icon icon-back"></i>
+                        <span class="if-not-md">Back</span>
+                    </a>
+                </div>
+                <div class="title">Journey</div>
+            </div>
+        </div>
+        <div class="page-content">
+
+            <!-- Scrollable page content-->
+
+            {{#journey}}
+            {{#sections}}
+            {{#js_if 'this.type == "public_transport"'}}
+            <!-- comp the link color -->
+            <div class="card">
+                <div class="card-content ">
+                    <div class="row-journey">
+                        <div class="col-journey-time">{{departureTime}}</div>
+                        <div class="col-journey-graphics-top">&nbsp;</div>
+                        <div class="col-journey-main">{{departurePlace}}</div>
+                    </div>
+                    <div class="row-journey">
+                        <div class="col-journey-time">&nbsp;</div>
+                        <!-- we gave chip 2x10px padding + 2x2px margin-->
+                        <div class="col-journey-graphics-mid">
+                            &nbsp;
+                        </div>
+                        <div class="col-journey-main-mid">
+                            <div class="chip">
+                                <div class="chip-media bg-color-black">
+                                    <i class="icon f7-icons if-not-md">plus_circle</i>
+                                    <i class="icon material-icons md-only">directions_train</i>
+                                </div>
+                                <div class="chip-label">{{name}}</div>
+                            </div>
+                            ({{duration}} min)<br>
+                            passes 15 stops
+                        </div>
+                    </div>
+                    <div class="row-journey">
+                        <div class="col-journey-time">{{arrivalTime}}</div>
+                        <div class="col-journey-graphics-bottom">&nbsp;</div>
+                        <div class="col-journey-main">{{arrivalPlace}}</div>
+                    </div>
+                </div>
+            </div>
+            {{/js_if}}
+            {{/sections}}
+            {{/journey}}
+
+        </div>
+    </div>
+    </div>
+</template>
+<script>
+    import Journeys from '../js/journey.js';
+    export default {
+        props: {
+            id: String,
+        },
+        data() {
+            const self = this;
+            // Reference to root Store object
+            //var store = self.$root.journey;
+
+            return {
+                journey: null
+            }
+        },
+        on: {
+            pageInit: function () {
+                console.log("PAGE INIT JOURNEY", this.$root.journey);
+
+                var self = this;
+                var app = self.$app;
+
+                var fromPlace= {
+                    place: {
+                        id: "stop_area:9021003780438000"
+                        
+                    },
+                    type: "stop_area"
+                };
+                var toPlace= {
+                    place: {
+                        id: "stop_area:9021003780050000"
+                    },
+                    type: "stop_area"
+                };
+
+                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 10, function(data) {
+                    console.log(data);
+                    self.$setState({journey: data[0]});
+                });
+            }
+        }
+    }
+</script>

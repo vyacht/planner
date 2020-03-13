@@ -1,0 +1,193 @@
+/* iOS Cordova Tweak */
+.device-cordova.device-ios {
+  height: 100vh;
+}
+
+/* Left Panel right border when it is visible by breakpoint */
+.panel-left.panel-in-breakpoint:before {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: rgba(0,0,0,0.1);
+  content: '';
+  z-index: 6000;
+}
+
+/* Hide navbar link which opens left panel when it is visible by breakpoint */
+.panel-left.panel-in-breakpoint ~ .view .navbar .panel-open[data-panel="left"] {
+  display: none;
+}
+
+/*
+  Extra borders for main view and left panel for iOS theme when it behaves as panel (before breakpoint size)
+*/
+.ios .panel-left:not(.panel-in-breakpoint).panel-in ~ .view-main:before,
+.ios .panel-left:not(.panel-in-breakpoint).panel-closing ~ .view-main:before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: rgba(0,0,0,0.1);
+  content: '';
+  z-index: 6000;
+}
+
+.demo-card-header-pic .card-header {
+    height: 20vw;
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+  }
+  .demo-card-header-pic .card-content-padding .date{
+    color: #8e8e93;
+  }
+
+.demo-col-center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  .demo-sheet-swipe-to-step {
+    --f7-sheet-border-color: transparent;
+    border-radius: 15px 15px 0 0;
+    overflow: hidden;
+  }
+  
+  .demo-sheet-swipe-to-step .swipe-handler {
+    background: none;
+  }
+  .swipe-handler {
+    height: 16px;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: 0;
+    background: #fff;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .swipe-handler:after {
+    content: '';
+    width: 36px;
+    height: 6px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -18px;
+    margin-top: -3px;
+    border-radius: 3px;
+    background: #666;
+  }
+
+  .long-seperator {
+    content: '';
+    width: 100%;
+    height: 3px;
+    position: absolute;
+    margin-top: -3px;
+    border-radius: 3px;
+    background: #ddd;
+  }
+  
+ .transport-chip-clickable {
+    border-style: solid; border-radius: 3px; border-width: 1px;      
+    border-color: #bbb;
+    color: #666;
+    padding: 1px;
+    cursor: pointer;
+}
+
+.tcc-highlight {
+    border-color: #000;
+    font-weight: bold;
+}
+
+  .transport-chip  {
+    border-style: solid; border-radius: 3px; border-width: 1px;      
+    border-color: #bbb;
+    color: #666;
+    padding: 1px;
+  }
+
+  .transport-visualizer {
+    content: '';
+    width: 3px;
+    height: 100%;
+    position: absolute;
+    border-radius: 3px;
+    background: #ddd;
+  }
+
+
+  .grid-resizable-demo {
+    --f7-grid-row-gap: 0px;
+  }
+  
+  .grid-resizable-demo div[class*="col"] {
+    margin-bottom: 0px;
+  }
+
+  .grid-resizable-demo .demo-col-center-content {
+      text-align: left;
+      align-items: left;
+  }
+
+  :root {
+    --journey-transport-chip-padding: 8px;
+    --journey-graphics-size: 8px;
+    --journey-graphics-color:  rgb(247, 68, 14);
+}
+
+  .col-journey-time {
+    width: 42px;
+    text-align: right;
+    padding: 0px 5px 0px 5px;
+  }
+
+  .row-journey {
+    display: flex;
+    justify-content: start-flex;
+  }
+
+  .col-journey-main, 
+  .col-journey-main-mid {
+    width: 320px;
+    text-align: left;
+    padding-left: 16px;
+  }
+
+  .col-journey-main-mid {
+    padding: var(--journey-transport-chip-padding);
+    padding-left: calc(var(--journey-transport-chip-padding) + 24px);
+
+    /* margin left = .5 x line-thinkness */
+    border-left: 4px solid var(--journey-graphics-color);
+    margin-left: calc(-1*var(--journey-graphics-size) - 2px);
+  }
+
+  .col-journey-graphics-mid {
+    content: '';
+    width: 16px;
+  }
+
+  .col-journey-graphics-top,
+  .col-journey-graphics-bottom {
+    content: '';
+    width: calc(2*var(--journey-graphics-size)); 
+    height: calc(2*var(--journey-graphics-size));
+
+    left: 50%; right: 50%;
+
+    border-radius: var(--journey-graphics-size);
+    background: rgb(247, 68, 14);
+  }
+
+  .col-journey-graphics-top {
+    /* line-height is 21px - 16px */
+    margin-top: calc(21px - 2*var(--journey-graphics-size));
+  }
