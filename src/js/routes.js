@@ -18,7 +18,7 @@ var routes = [
     component: MainPage,
   },
   {
-    path: '/form/',
+    path: '/form',
     component: FormPage,
   },
 

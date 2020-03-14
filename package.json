@@ -1,8 +1,8 @@
 {
-  "name": "gotland",
+  "name": "vyplnr",
   "private": true,
   "version": "1.0.0",
-  "description": "gotland",
+  "description": "vy public transport trip planner",
   "repository": "",
   "license": "UNLICENSED",
   "framework7": {
@@ -11,7 +11,7 @@
       "web",
       "cordova"
     ],
-    "name": "gotland",
+    "name": "vyplnr",
     "pkg": "io.framework7.myapp",
     "framework": "core",
     "template": "split-view",
