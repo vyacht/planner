@@ -177,6 +177,7 @@
 </template>
 
 <script>
+    import Journeys from '../js/journey.js';
     export default {
         data: function () {
             var self = this;
@@ -213,90 +214,9 @@
 
                 if(!self.toSet || !self.fromSet) return;
 
-                var app = self.$app;
-
-                var from = [59.941710, 17.604303];
-                var to = [59.725600, 17.787895];
-
-                //console.log("UPDATE JOURNEY", self.toPlace);
-
-                var journeyUrl = 'http://localhost:9191/v1/coverage/default/journeys?' +
-                    'from=' + self.fromPlace.place.id +
-                    '&to=' + self.toPlace.place.id +
-                    '&count=3';
-                app.request.get(journeyUrl, function (data) {
-
-                    var jss = [];
-                    var js = JSON.parse(data).journeys;
-
-                    //console.log(js);
-
-                    for (var i = 0; i < js.length; i++) {
-
-                        var j = js[i];
-                        j.departure_date_time;
-                        j.arrival_date_time;
-
-                        if (j.sections.length <= 0) {
-                            return; // nothing to do
-                        }
-
-                        var j1 = {
-                            journey_from_station: j.sections[0].from.name,
-                            journey_to_station: j.sections[j.sections.length - 1].to.name,
-                            duration: Math.round(j.durations.total / 60.0) + "min",
-                            sections: []
-                        };
-
-                        for (var s = 0; s < j.sections.length; s++) {
-                            var ss = j.sections[s];
-
-                            // there are weird sections from station to itself (waiting time?)
-                            if (ss.duration == 0) continue;
-                            var at = moment(ss.arrival_date_time, "YYYYMMDDThhmmss");
-                            var dt = moment(ss.departure_date_time, "YYYYMMDDThhmmss");
-
-
-                            var label = '';
-                            if('display_informations' in ss) {
-                                //console.log("MISSING: ", ss);
-
-                                label = ss.display_informations.name;
-                                if (!label) {
-                                    label = ss.display_informations.label;
-                                }
-                            }
-
-                            var sec = {
-                                type: ss.type,
-                                mode: ss.type == "public_transport" ? 
-                                    ss.display_informations.commercial_mode : "",
-                                duration: Math.round(ss.duration/60),
-                                name: label,
-                                arrivalTime: at.format("HH:mm"),
-                                departureTime: dt.format("HH:mm"),
-                                inTime: at.fromNow()
-                            }
-
-                            console.log(sec);
-
-                            j1.sections.push(sec);
-                        }
-
-                        if(j1.sections.length > 0) {
-                            console.log(j1);
-                            j1.departureTime = j1.sections[0].departureTime;
-                            j1.inTime = j1.sections[0].inTime;
-                            j1.arrivalTime = j1.sections[j1.sections.length - 1].arrivalTime;
-                            jss.push(j1);
-                        }
-
-                        //if (i == 0) break;
-                    }
-
-                    self.$setState({
-                        journeys: jss
-                    });
+                Journeys.getJourneyBetweenStops(this.fromPlace, this.toPlace, 10, function(data) {
+                    //console.log(data);
+                    self.$setState({journeys: data});
                 });
             },
         },
@@ -304,7 +224,7 @@
             pageInit: function () {
                 var self = this;
                 var app = self.$app;
-                var placesURL = "http://localhost:9191/v1/coverage/default/places";
+                
                 var acTempl = {
                     inputEl: '#autocomplete-dropdown-expand-from',
                     openIn: 'dropdown',
@@ -361,21 +281,11 @@
                         }
                         // Show Preloader
                         autocomplete.preloaderShow();
-
-                        // Do Ajax request to Autocomplete data
-                        app.request({
-                            url: placesURL,
-                            method: 'GET',
-                            dataType: 'json',
-                            //send "query" to server. Useful in case you generate response dynamically
-                            data: {
-                                q: query,
-                            },
-                            success: function (data) {
-                                render(data.places);
-                                // Hide Preoloader
-                                autocomplete.preloaderHide();
-                            }
+                        Journeys.getPlaces(query, 10, function(places) {
+                            //console.log();
+                            render(places);
+                            // Hide Preoloader
+                            autocomplete.preloaderHide();
                         });
                     },
                     on: {
@@ -417,8 +327,8 @@
                 }
 
                 var acTo = app.autocomplete.create(acTempl);
-
-                /*self.$setState({
+                /*
+                self.$setState({
                     fromPlace: {
                         id: "stop_area:9021003780438000"
                     },

@@ -140,6 +140,7 @@
     </div>
 </template>
 <script>
+    import Journeys from '../js/journey.js';
     export default {
         data: function () {
             return {
@@ -225,157 +226,44 @@
             },
             getDepartures: function (stopArea) {
                 var self = this;
-                var app = self.$app;
-
-                var departuresUrl =
-                    'http://localhost:9191/v1/coverage/default/stop_areas/' +
-                    stopArea.id +
-                    "/departures";
-
-                app.request({
-                    url: departuresUrl,
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        var deps = [];
-                        console.log(data);
-                        data.departures.forEach(e => {
-
-                            var dt = moment(e.stop_date_time.departure_date_time,
-                                "YYYYMMDDThhmmss");
-
-                            var label = e.route.line.name;
-                            if (!label) {
-                                label = e.route.line.code;
-                            }
-
-                            deps.push({
-                                direction: e.display_informations.direction,
-                                type: e.display_informations
-                                    .commercial_mode, // Bus, Train, ...
-                                id: e.route.line.id,
-                                label: label,
-                                departureTime: dt,
-                            });
-                        });
-                        self.$setState({
-                            departures: deps.slice(0, 3)
-                        });
-                    }
+                Journeys.getDeparturesFromStopArea(stopArea, function(data) {
+                    //console.log(data);
+                    self.$setState({departures: data.slice(0, 3)});
                 });
 
             },
-            /* from stop schedule for stop area:
-               iteratively 
-               - extract all lines from departures 
-               - extract the departures by line 
+            getLines: function (stopArea) {
 
-               (departures by time are extracted with different call 
-                departures by getDepartures() - good or bad?)
-            */
-            getLines: function (page, llines, stopArea, departures) {
                 var self = this;
-                var app = self.$app;
 
-                var stopSchedulesUrl =
-                    'http://localhost:9191/v1/coverage/default/stop_areas/' +
-                    stopArea.id +
-                    "/stop_schedules";
+                Journeys.getLines(stopArea, function(stopArea, lines, departures) {
 
-                if (page > 0) {
-                    stopSchedulesUrl += "?start_page=" + page;
-                } else {
-                    llines = {};
-                }
 
-                //console.log("loop lines page = %d %s", page, stopSchedulesUrl);
+                    // Find matched items
+                    self.sheetSwipeToStep.open();
 
-                /* get all stop schedules that contain all lines */
-
-                app.request({
-                    url: stopSchedulesUrl,
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-
-                        // Find matched items
-                        self.sheetSwipeToStep.open();
-
-                        /*
-                            we do extraction on labels for lines in two steps:
-                            - lines are listed multiple times
-                            - use a dictionary to get distinct lines ids and 
-                              their print label (code or name)
-                            - then transfer distinct lines to a normal array of 
-                              objects for display
-
-                            (this is because T7 can't do dicts imho)
-                        */
-
-                        data.stop_schedules.forEach(e => {
-                            var l = e.route.line;
-
-                            if (e.additional_informations != "no_departure_this_day") {
-                                var type = l.commercial_mode.name;
-                                var label = l.name;
-                                if (!label) {
-                                    label = l.code;
-                                }
-                                if (!(type in llines)) llines[type] = [];
-                                if (!(l.id in llines[type])) {
-                                    llines[type][l.id] = label;
-                                }
-
-                                var dts = [];
-                                e.date_times.forEach(st => {
-                                    var dt = moment(st.date_time, "YYYYMMDDThhmmss");
-                                    dts.push(dt);
-                                });
-
-                                departures.push({
-                                    direction: e.display_informations.direction,
-                                    type: type,
-                                    lineId: l.id,
-                                    label: label,
-                                    departureTimes: dts,
-                                });
-                            }
-                        });
-
-                        if (data.pagination.items_on_page == data.pagination.items_per_page) {
-
-                            self.getLines(page + 1, llines, stopArea, departures);
-
-                        } else {
-                            /* iterative loop stop condition 
-                            
-                                - shovel distinct list of lines over to normal array
-                            */
-
-                            // stupid but it seems std template7 does not understand dicts
-                            var ll = {};
-                            for (var t in llines) {
-                                // iterate all types (Bus, Train ...)
-                                if (!(t in ll)) ll[t] = [];
-                                for (var lid in llines[t]) {
-                                    // get the label for each line id
-                                    ll[t].push({
-                                        label: llines[t][lid],
-                                        id: lid
-                                    });
-                                }
-                            }
-
-                            self.$setState({
-                                // maintain null for not set for T7
-                                linesBus: ("Bus" in ll) ? ll["Bus"] : null,
-                                linesTrain: ("Train" in ll) ? ll["Train"] : null,
-                                stopArea: stopArea,
-                                departuresByLine: departures
+                    // stupid but it seems std template7 does not understand dicts
+                    // - shovel distinct list of lines over to normal array
+                    var ll = {};
+                    for (var t in lines) {
+                        // iterate all types (Bus, Train ...)
+                        if (!(t in ll)) ll[t] = [];
+                        for (var lid in lines[t]) {
+                            // get the label for each line id
+                            ll[t].push({
+                                label: lines[t][lid],
+                                id: lid
                             });
-                            //console.log(self.stopArea, self.linesBus, self.linesTrain);
                         }
                     }
+
+                    self.$setState({
+                        // maintain null for not set for T7
+                        linesBus: ("Bus" in ll) ? ll["Bus"] : null,
+                        linesTrain: ("Train" in ll) ? ll["Train"] : null,
+                        stopArea: stopArea,
+                        departuresByLine: departures
+                    });
                 });
             },
             updatePlace: function (place) {
@@ -395,10 +283,8 @@
                 self.markerLayerGroup.clearLayers();
                 L.marker(pos).addTo(self.markerLayerGroup);
 
-                var llines = {};
-                var departures = [];
 
-                self.getLines(0, llines, stopArea, departures);
+                self.getLines(stopArea);
                 self.getDepartures(stopArea);
 
                 this.$root.$setState({
@@ -485,8 +371,6 @@
                 var self = this;
                 var app = self.$app;
 
-                var placesURL = "http://localhost:9191/v1/coverage/default/places";
-
                 if (!self.autocompleteToDest)
                     self.autocompleteToDest = {
                         inputEl: '#autocomplete-dropdown-expand-to-dest',
@@ -546,22 +430,12 @@
                             }
                             // Show Preloader
                             autocomplete.preloaderShow();
-
-                            // Do Ajax request to Autocomplete data
-                            app.request({
-                                url: placesURL,
-                                method: 'GET',
-                                dataType: 'json',
-                                //send "query" to server. Useful in case you generate response dynamically
-                                data: {
-                                    q: query,
-                                },
-                                success: function (data) {
-                                    // Find matched items
-                                    render(data.places);
-                                    autocomplete.preloaderHide();
-                                }
-                            });
+                            Journeys.getPlaces(query, 10, function(places) {
+                            console.log();
+                            render(places);
+                            // Hide Preoloader
+                            autocomplete.preloaderHide();
+                        });
                         },
                         on: {
                             change: function (value) {
