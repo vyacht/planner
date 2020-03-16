@@ -264,6 +264,8 @@
                         stopArea: stopArea,
                         departuresByLine: departures
                     });
+
+                    self.getDepartures(stopArea);
                 });
             },
             updatePlace: function (place) {
@@ -285,7 +287,6 @@
 
 
                 self.getLines(stopArea);
-                self.getDepartures(stopArea);
 
                 this.$root.$setState({
                     toJourney: {
@@ -431,7 +432,7 @@
                             // Show Preloader
                             autocomplete.preloaderShow();
                             Journeys.getPlaces(query, 10, function(places) {
-                            console.log();
+                            //console.log();
                             render(places);
                             // Hide Preoloader
                             autocomplete.preloaderHide();
