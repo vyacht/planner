@@ -6,12 +6,11 @@
             <div class="card" style="position: absolute; z-index: 2; width: 80%; left: 32px; top: 6px;">
                 <div class="card-content" style="background-color: white; ">
 
+                    <!-- Search box formated as list with 1 item-->
                     <div class="list no-hairlines">
                         <ul>
                             <li class="item-content">
-
                                 <div class="item-media">
-
                                     <div class="menu">
                                         <div class="menu-inner">
                                             <a href="#" class="menu-item icon-only panel-open" data-panel="left">
@@ -59,7 +58,11 @@
                 <div class="swipe-handler" @click="toggleSwipeStep"></div>
 
                 <div class="sheet-modal-swipe-step">
-                    <div class="margin-top text-align-center">{{stopArea.name}}</div>
+
+                    <div class="margin-top text-align-left"
+                        style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
+                        {{stopArea.name}}
+                    </div>
 
                     <div class="list no-hairlines" style="margin:12px">
                         <ul>
@@ -72,7 +75,7 @@
                                 <div class="item-inner">
                                     <div class="item-title">
                                         <div class="item-header">Bus</div>
-                                        <div style="overflow-x: auto; overflow-y: hidden;">
+                                        <div class="disable-scrollbars" style="overflow-x: auto; overflow-y: hidden;">
                                             {{#each linesBus}}
                                             {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
                                             {{/each}}
@@ -91,9 +94,11 @@
                                 <div class="item-inner">
                                     <div class="item-title">
                                         <div class="item-header">Train</div>
+                                        <div class="disable-scrollbars" style="overflow-x: auto; overflow-y: hidden;"></div>
                                         {{#each linesTrain}}
                                         {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
                                         {{/each}}
+                                        </div>
                                     </div>
                                 </div>
                             </li>
@@ -154,7 +159,7 @@
             }
         },
         methods: {
-            resetPlace: function() {
+            resetPlace: function () {
                 this.$setState({
                     stopArea: {},
                     linesBus: null,
@@ -170,11 +175,11 @@
             /* records any key press in input box */
             onKeyUp: function () {
                 var inputText = this.$$('#autocomplete-dropdown-expand-to-dest').val();
-                if(!inputText || inputText.length == 0)
+                if (!inputText || inputText.length == 0)
                     this.resetPlace();
             },
             /* button to input box has been hit */
-            onclearSearchBox: function() {
+            onclearSearchBox: function () {
                 this.resetPlace();
             },
             /* iterative through all pages */
