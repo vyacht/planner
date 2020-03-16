@@ -25,8 +25,9 @@
                                 </div>
                                 <div class="item-inner">
                                     <input id="autocomplete-dropdown-expand-to-dest" type="text"
-                                        style="color: black; align-items: left;" placeholder="Search your destination">
-                                    <span class="input-clear-button"></span>
+                                        style="color: black; align-items: left;" placeholder="Search your destination"
+                                        @keyup='onKeyUp()'>
+                                    <span class="input-clear-button" @Click='onclearSearchBox()'></span>
                                 </div>
 
                                 <div class="item-after">
@@ -127,12 +128,9 @@
                         {{mainDepartureList departures filteredDepartures lineFilter}}
                     </ul>
                 </div>
-
             </div>
             {{/if}}
         </div>
-
-
     </div>
     </div>
 </template>
@@ -148,7 +146,7 @@
                 stopArea: {},
                 linesBus: null,
                 linesTrain: null,
-                linesFerry: [],
+                linesFerry: null,
                 departures: null,
                 departuresByLine: null,
                 lineFilter: null,
@@ -156,23 +154,47 @@
             }
         },
         methods: {
+            resetPlace: function() {
+                this.$setState({
+                    stopArea: {},
+                    linesBus: null,
+                    linesTrain: null,
+                    linesFerry: null,
+                    departures: null,
+                    departuresByLine: null,
+                    lineFilter: null,
+                    filteredDepartures: null
+                });
+                this.markerLayerGroup.clearLayers();
+            },
+            /* records any key press in input box */
+            onKeyUp: function () {
+                var inputText = this.$$('#autocomplete-dropdown-expand-to-dest').val();
+                if(!inputText || inputText.length == 0)
+                    this.resetPlace();
+            },
+            /* button to input box has been hit */
+            onclearSearchBox: function() {
+                this.resetPlace();
+            },
             /* iterative through all pages */
             toggleLineFilter: function (lineId) {
 
                 var fstate = null;
                 if (!this.lineFilter) {
-                    console.log("Filter on (%s)", lineId);
+                    //console.log("Filter on (%s)", lineId);
                     fstate = lineId;
                 } else {
                     if (this.lineFilter == lineId) {
-                        console.log("Filter off");
+                        //console.log("Filter off");
                         fstate = null;
                     } else {
-                        console.log("Filter change (%s)", lineId);
+                        //console.log("Filter change (%s)", lineId);
                         fstate = lineId;
                     }
                 }
 
+                /* filter by selected line */
                 var filteredDepartures = [];
                 this.departuresByLine.forEach(departure => {
                     if (departure.lineId == lineId) {
@@ -187,7 +209,7 @@
                     }
                 });
 
-                filteredDepartures.sort(function(a, b) {
+                filteredDepartures.sort(function (a, b) {
                     return a.departureTime.unix() - b.departureTime.unix();
                 });
 
@@ -238,6 +260,14 @@
                 });
 
             },
+            /* from stop schedule for stop area:
+               iteratively 
+               - extract all lines from departures 
+               - extract the departures by line 
+
+               (departures by time are extracted with different call 
+                departures by getDepartures() - good or bad?)
+            */
             getLines: function (page, llines, stopArea, departures) {
                 var self = this;
                 var app = self.$app;
@@ -317,7 +347,7 @@
                                 - shovel distinct list of lines over to normal array
                             */
 
-                            // stupid but it seems template7 does not understand dicts
+                            // stupid but it seems std template7 does not understand dicts
                             var ll = {};
                             for (var t in llines) {
                                 // iterate all types (Bus, Train ...)
@@ -389,14 +419,10 @@
                 }
                 app.views.main.router.navigate({
                     name: route,
-                    /*
-                    params: {
-                        journeyId: toString(id),
-                    },
-                    */
                 });
             },
             toggleSwipeStep: function () {
+                console.log("TOGGLE STEP");
                 this.sheetSwipeToStep.stepToggle();
             },
             loadMapAssets: function () {
@@ -455,30 +481,32 @@
                 var app = self.$app;
 
                 var placesURL = "http://localhost:9191/v1/coverage/default/places";
-                var acTempl = {
-                    inputEl: '#autocomplete-dropdown-expand-to-dest',
-                    openIn: 'dropdown',
-                    preloader: true, //enable preloader
-                    /* If we set valueProperty to "id" then input value on select will be set according to this property */
-                    valueProperty: 'name', //object's "value" property name
-                    textProperty: 'name', //object's "text" property name
-                    limit: 20, //limit to 20 results
-                    typeahead: false,
-                    dropdownPlaceholderText: '',
 
-                    //value: 'Knivsta station (Knivsta)',// this.$root.toJourney?this.$root.toJourney:'',
+                if (!self.autocompleteToDest)
+                    self.autocompleteToDest = {
+                        inputEl: '#autocomplete-dropdown-expand-to-dest',
+                        openIn: 'dropdown',
+                        preloader: true, //enable preloader
+                        /* If we set valueProperty to "id" then input value on select will be set according to this property */
+                        valueProperty: 'name', //object's "value" property name
+                        textProperty: 'name', //object's "text" property name
+                        limit: 20, //limit to 20 results
+                        typeahead: false,
+                        dropdownPlaceholderText: '',
 
-                    // overloading renderItem in order to add icons for place, stoparea, ...
-                    renderItem: function (item, index) {
-                        const ac = this;
-                        //if (ac.params.renderItem) return ac.params.renderItem.call(ac, item, index);
-                        let itemHtml;
-                        const itemValue = item.value && typeof item.value === 'string' ? item.value.replace(
-                            /"/g, '&quot;') : item.value;
-                        // we only do the dropdown case here, for details see autocomplete-class.js renderItem()
-                        if (item.placeholder) {
-                            // Dropwdown placeholder
-                            itemHtml = `
+                        //value: 'Knivsta station (Knivsta)',// this.$root.toJourney?this.$root.toJourney:'',
+
+                        // overloading renderItem in order to add icons for place, stoparea, ...
+                        renderItem: function (item, index) {
+                            const ac = this;
+                            //if (ac.params.renderItem) return ac.params.renderItem.call(ac, item, index);
+                            let itemHtml;
+                            const itemValue = item.value && typeof item.value === 'string' ? item.value.replace(
+                                /"/g, '&quot;') : item.value;
+                            // we only do the dropdown case here, for details see autocomplete-class.js renderItem()
+                            if (item.placeholder) {
+                                // Dropwdown placeholder
+                                itemHtml = `
                                 <li class="autocomplete-dropdown-placeholder">
                                 <label class="item-content">
                                     <div class="item-inner">
@@ -487,9 +515,9 @@
                                 </label>
                                 </li>
                             `;
-                            return itemHtml.trim();
-                        }
-                        itemHtml = `
+                                return itemHtml.trim();
+                            }
+                            itemHtml = `
                             <li>
                             <label class="item-radio item-content" data-value="${itemValue}">
                                 <div class="item-media">
@@ -502,41 +530,41 @@
                             </label>
                             </li>
                         `;
-                        return itemHtml.trim();
-                    },
-                    source: function (query, render) {
-                        var autocomplete = this;
-                        var results = [];
-                        if (query.length === 0) {
-                            render(results);
-                            return;
-                        }
-                        // Show Preloader
-                        autocomplete.preloaderShow();
-
-                        // Do Ajax request to Autocomplete data
-                        app.request({
-                            url: placesURL,
-                            method: 'GET',
-                            dataType: 'json',
-                            //send "query" to server. Useful in case you generate response dynamically
-                            data: {
-                                q: query,
-                            },
-                            success: function (data) {
-                                // Find matched items
-                                render(data.places);
-                                autocomplete.preloaderHide();
+                            return itemHtml.trim();
+                        },
+                        source: function (query, render) {
+                            var autocomplete = this;
+                            var results = [];
+                            if (query.length === 0) {
+                                render(results);
+                                return;
                             }
-                        });
-                    },
-                    on: {
-                        change: function (value) {
-                            self.updatePlace(value[0]);
+                            // Show Preloader
+                            autocomplete.preloaderShow();
+
+                            // Do Ajax request to Autocomplete data
+                            app.request({
+                                url: placesURL,
+                                method: 'GET',
+                                dataType: 'json',
+                                //send "query" to server. Useful in case you generate response dynamically
+                                data: {
+                                    q: query,
+                                },
+                                success: function (data) {
+                                    // Find matched items
+                                    render(data.places);
+                                    autocomplete.preloaderHide();
+                                }
+                            });
+                        },
+                        on: {
+                            change: function (value) {
+                                self.updatePlace(value[0]);
+                            }
                         }
-                    }
-                };
-                var acFrom = app.autocomplete.create(acTempl);
+                    };
+                var acFrom = app.autocomplete.create(self.autocompleteToDest);
 
                 if (!self.sheetSwipeToStep) {
                     self.sheetSwipeToStep = self.$app.sheet.create({
