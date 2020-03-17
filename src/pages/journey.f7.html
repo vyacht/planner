@@ -62,6 +62,8 @@
 </template>
 <script>
     import Journeys from '../js/journey.js';
+    import Utils from '../js/utils.js';
+
     export default {
         props: {
             id: String,
@@ -93,6 +95,7 @@
                     }).addTo(self.mymap);
 
                 self.markerLayerGroup = L.layerGroup().addTo(self.mymap);
+                self.tripLayer = L.geoJSON().addTo(self.mymap);
                 self.mapInitialized = true;
             },
             getTestJourney: function () {
@@ -114,11 +117,61 @@
                     type: "stop_area"
                 };
 
-                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 10, function (data) {
+                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 1, function (data) {
                     console.log(data);
                     self.$setState({
                         journey: data[0]
                     });
+                    if(self.tripLayer) {
+                        console.log("adding trip layer");
+                        var lineStyle = {
+                            "color": "#4285F4",
+                            "weight": 5,
+                            "opacity": 0.65
+                        };
+                        var markerStyle = {
+                            "color": "#4285F4",
+                            "fillColor": "#ffffff",
+                            "weight": 2,
+                            "opacity": 1
+                        };
+
+                        var bbox = {}, 
+                            sections = data[0].sections;
+                        for(var s= 0; s < sections.length; s++) {
+                            //console.log(sections[s].geojson);
+                            var sec = sections[s];
+                            if(sec.geojson) {
+                                self.tripLayer.addData(sec.geojson);
+                                bbox = Utils.getBoundingBox(bbox, sec.geojson);
+                            }
+                        }
+                        self.tripLayer.setStyle(lineStyle);              
+
+                        for(var s= 0; s < sections.length; s++) {
+                            //console.log(sections[s].geojson);
+                            var sec = sections[s];
+                            if(sec.departurePosition)
+                                L.circleMarker(sec.departurePosition, {
+                                    radius: 5
+                                }).addTo(self.markerLayerGroup);
+                            if(sec.departurePosition)
+                                L.circleMarker(sec.arrivalPosition, {
+                                    radius: 5
+                                }).addTo(self.markerLayerGroup);
+                        }
+                        self.markerLayerGroup.setStyle(markerStyle);      
+
+                        var lbbox = [
+                            [bbox.latMin, bbox.lonMin],
+                            [bbox.latMax, bbox.lonMax],
+                        ];
+
+                        //console.log(lbbox);
+                        self.mymap.fitBounds(lbbox);
+                        //L.rectangle(lbbox, {color: "#ff7800", weight: 1}).addTo(self.mymap);
+                    }
+                    
                 });
             }
         },
@@ -137,9 +190,9 @@
                     self.sheetSwipeToStep.open();
                 }
 
-                //self.getTestJourney();
+                self.getTestJourney();
                 //console.log("PAGE INIT JOURNEY", self.$root.journey);
-                self.$setState({journey: this.$root.selectedJourney});
+                //self.$setState({journey: this.$root.selectedJourney});
             },
             pageAfterIn: function () {
                 var self = this;

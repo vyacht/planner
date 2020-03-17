@@ -49,7 +49,7 @@ var Journeys = {
                 var jss = [];
                 var js = JSON.parse(data).journeys;
 
-                //console.log(js);
+                console.log(js);
 
                 for (var i = 0; i < js.length; i++) {
 
@@ -93,9 +93,14 @@ var Journeys = {
                             name: label,
                             departureTime: dt.format("HH:mm"),
                             departurePlace: ss.type != "waiting" ? ss.from.name : "",
+                            departurePosition: ss.type == "public_transport" ? 
+                                ss.from.stop_point.coord : null,
                             arrivalTime: at.format("HH:mm"),
                             arrivalPlace: ss.type != "waiting" ? ss.to.name : "",
-                            inTime: at.fromNow()
+                            arrivalPosition: ss.type == "public_transport" ? 
+                                ss.to.stop_point.coord : null,
+                            inTime: at.fromNow(),
+                            geojson: ss.geojson
                         }
 
                         //console.log(sec);
