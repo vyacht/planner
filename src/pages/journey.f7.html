@@ -1,25 +1,30 @@
 <template>
     <div class="page">
-        <div class="navbar">
-            <div class="navbar-bg"></div>
-            <div class="navbar-inner sliding">
-                <div class="left">
-                    <a href="#" class="back link">
-                        <i class="icon icon-back"></i>
-                        <span class="if-not-md">Back</span>
-                    </a>
-                </div>
-                <div class="title">Journey</div>
+        <div class="page-content">
+            <div class="demo-map-container" style="z-index: 0; height: 100%"></div>
+            <div style="position: absolute; z-index: 2; left: 32px; top: 6px;">
+                <a href="#" class="back link">
+                    <i class="icon icon-back" style="color: black"></i>
+                    <span class="if-not-md">Back</span>
+                </a>
             </div>
         </div>
-        <div class="page-content">
 
-            <!-- Scrollable page content-->
+
+            <div id="journey-sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
+                <div class="sheet-modal-inner">
+                    <div class="swipe-handler"></div>
+                    <div class="sheet-modal-swipe-step">
+                        <div class="margin-top text-align-left"
+                            style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
+                            This is a test
+                        </div>
+                    </div>
 
             {{#journey}}
             {{#sections}}
             {{#js_if 'this.type == "public_transport"'}}
-            <!-- comp the link color -->
+
             <div class="card">
                 <div class="card-content ">
                     <div class="row-journey">
@@ -29,7 +34,7 @@
                     </div>
                     <div class="row-journey">
                         <div class="col-journey-time">&nbsp;</div>
-                        <!-- we gave chip 2x10px padding + 2x2px margin-->
+                        
                         <div class="col-journey-graphics-mid">
                             &nbsp;
                         </div>
@@ -48,9 +53,11 @@
             {{/js_if}}
             {{/sections}}
             {{/journey}}
+                    
+                </div>
+            </div>
 
-        </div>
-    </div>
+
     </div>
 </template>
 <script>
@@ -63,33 +70,55 @@
             const self = this;
             // Reference to root Store object
             //var store = self.$root.journey;
-
             return {
-                journey: null
+                mapInitialized: false,
+                journey: null,
             }
         },
         methods: {
-            getTestJourney: function() {
+            initMap: function () {
+                var self = this;
+                self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
+                    zoomControl: false
+                }).setView([59.8, 17.6], 10);
+                var topoUrl = 'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+                var topoAttribution =
+                    'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
+
+                L.tileLayer(
+                    topoUrl, {
+                        maxZoom: 18,
+                        attribution: topoAttribution,
+                        id: 'mapbox.streets'
+                    }).addTo(self.mymap);
+
+                self.markerLayerGroup = L.layerGroup().addTo(self.mymap);
+                self.mapInitialized = true;
+            },
+            getTestJourney: function () {
                 var self = this;
                 var app = self.$app;
 
-                var fromPlace= {
+                var fromPlace = {
                     place: {
-                        id: "stop_area:9021003780438000"
-                        
+                        //id: "stop_area:9021003780438000"
+                        id: "stop_area:9021003793113000"
                     },
                     type: "stop_area"
                 };
-                var toPlace= {
+                var toPlace = {
                     place: {
-                        id: "stop_area:9021003780050000"
+                        //id: "stop_area:9021003780050000"
+                        id: "stop_area:9021003780232000"
                     },
                     type: "stop_area"
                 };
 
-                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 10, function(data) {
-                    //console.log(data);
-                    self.$setState({journey: data[0]});
+                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 10, function (data) {
+                    console.log(data);
+                    self.$setState({
+                        journey: data[0]
+                    });
                 });
             }
         },
@@ -97,8 +126,38 @@
             pageInit: function () {
                 var self = this;
 
-                console.log("PAGE INIT JOURNEY", self.$root.journey);
+                if (!self.sheetSwipeToStep) {
+                    self.sheetSwipeToStep = self.$app.sheet.create({
+                        el: '.demo-sheet-swipe-to-step',
+                        backdrop: false,
+                        swipeToClose: true,
+                        swipeToStep: true,
+                        push: true,
+                    });
+                    self.sheetSwipeToStep.open();
+                }
+
+                //self.getTestJourney();
+                //console.log("PAGE INIT JOURNEY", self.$root.journey);
                 self.$setState({journey: this.$root.selectedJourney});
+            },
+            pageAfterIn: function () {
+                var self = this;
+                if (self.mapInitialized) return;
+                if (!window.L) {
+                    //self.loadMapAssets();
+                    return;
+                }
+                self.initMap();
+            },
+            pageBeforeOut: function () {
+                var self = this;
+                if (self.sheetSwipeToStep) self.sheetSwipeToStep.close();
+            },
+            pageBeforeRemove: function () {
+                var self = this;
+                // Destroy sheet modal when page removed
+                if (self.sheetSwipeToStep) self.sheetSwipeToStep.destroy();
             }
         }
     }
