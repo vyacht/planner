@@ -3,26 +3,37 @@
 import Framework7 from 'framework7/framework7.esm.bundle.js';
 
 var Journeys = {
-    port: 5000,
+    port: 9191,
     baseUrl: "http://localhost",
     instance: "default",
     apiVersion: "v1",
 
-    getUrl() {
+    getUrl: function() {
         return this.baseUrl + ":" + this.port + "/" + this.apiVersion + "/coverage/" + this.instance;
+    },
+    getParamByPlaceType: function(place) {
+        if(place.type == "stop_area") {
+            return place.place.id;
+        } else if (place.type == "current_position" ) {
+            //return place.place.longitude + ";" + place.place.latitude;
+            return "17.634303;59.94171";
+        }
     },
     getJourneyBetweenStops: function (fromPlace, toPlace, maxCount, callback) {
 
         var from = [59.941710, 17.604303];
         var to = [59.725600, 17.787895];
 
-        //console.log("UPDATE JOURNEY", self.toPlace);
+        var self = this;
+
+        //console.log("UPDATE JOURNEY", fromPlace, toPlace);
 
         var journeyUrl = this.getUrl() + "/journeys?" +
-            "from=" + fromPlace.place.id +
-            "&to=" + toPlace.place.id +
+            "from=" + self.getParamByPlaceType(fromPlace) +
+            "&to=" + self.getParamByPlaceType(toPlace) +
             "&count=" + maxCount;
 
+        console.log("UPDATE JOURNEY", journeyUrl);
         Framework7.request({
             url: journeyUrl,
             method: 'GET',

@@ -178,6 +178,7 @@
 
 <script>
     import Journeys from '../js/journey.js';
+    import Utils from '../js/utils.js';
     export default {
         data: function () {
             var self = this;
@@ -198,7 +199,7 @@
                 var app = self.$app;
 
                 //   console.log("open journey", this.journeys[id]);
-                this.$root.$setState({ journey: this.journeys[id] });
+                this.$root.$setState({ selectedJourney: this.journeys[id] });
                 //self.$root.Store.journey = this.journeys[id];
 
                 app.views.main.router.navigate({
@@ -215,7 +216,7 @@
                 if(!self.toSet || !self.fromSet) return;
 
                 Journeys.getJourneyBetweenStops(this.fromPlace, this.toPlace, 10, function(data) {
-                    //console.log(data);
+                    console.log(data);
                     self.$setState({journeys: data});
                 });
             },
@@ -225,6 +226,17 @@
                 var self = this;
                 var app = self.$app;
                 
+                /*
+                Utils.getPosition(function(place) {
+                    console.log(place);
+                    self.fromSet= true;
+                    self.fromPlace= place;
+
+                    // will call render function 
+                    self.updateJourneys(); 
+                });
+                */
+
                 var acTempl = {
                     inputEl: '#autocomplete-dropdown-expand-from',
                     openIn: 'dropdown',

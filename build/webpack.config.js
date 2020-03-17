@@ -22,7 +22,8 @@ module.exports = {
   mode: env,
   entry: {
     app: ['./src/js/app.js',
-     './src/js/journey.js' ],
+     './src/js/journey.js', 
+     './src/js/utils.js' ],
   },
   output: {
     path: resolvePath(isCordova ? 'cordova/www' : 'www'),
