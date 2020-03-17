@@ -41,8 +41,7 @@
                                 </div>
                                 <div class="chip-label">{{name}}</div>
                             </div>
-                            ({{duration}} min)<br>
-                            passes 15 stops
+                            ({{duration}} min)
                         </div>
                     </div>
                     <div class="row-journey">
@@ -75,10 +74,8 @@
                 journey: null
             }
         },
-        on: {
-            pageInit: function () {
-                console.log("PAGE INIT JOURNEY", this.$root.journey);
-
+        methods: {
+            getTestJourney: function() {
                 var self = this;
                 var app = self.$app;
 
@@ -100,6 +97,14 @@
                     //console.log(data);
                     self.$setState({journey: data[0]});
                 });
+            }
+        },
+        on: {
+            pageInit: function () {
+                var self = this;
+
+                console.log("PAGE INIT JOURNEY", self.$root.journey);
+                self.$setState({journey: this.$root.selectedJourney});
             }
         }
     }
