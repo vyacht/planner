@@ -324,32 +324,6 @@
                     el2.$el[0].offsetHeight);
                 
             },
-            loadMapAssets: function () {
-
-                var self = this;
-                var style = document.createElement('link');
-                style.rel = 'stylesheet';
-                style.href = 'https://unpkg.com/leaflet@1.4.0/dist/leaflet.css';
-                style.integrity =
-                    'sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==';
-                style.setAttribute('crossorigin', '')
-                style.onload = function () {
-                    self.mapStyleLoaded = true;
-                    if (self.mapScriptLoaded) self.initMap();
-                }
-                document.head.appendChild(style);
-
-                var script = document.createElement('script');
-                script.src = 'https://unpkg.com/leaflet@1.4.0/dist/leaflet.js';
-                script.integrity =
-                    'sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==';
-                script.setAttribute('crossorigin', '')
-                script.onload = function () {
-                    self.mapScriptLoaded = true;
-                    if (self.mapStyleLoaded) self.initMap();
-                }
-                document.head.appendChild(script);
-            },
             initMap: function () {
                 var self = this;
                 self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
@@ -469,7 +443,7 @@
                 var self = this;
                 if (self.mapInitialized) return;
                 if (!window.L) {
-                    self.loadMapAssets();
+                    //self.loadMapAssets();
                     return;
                 }
                 self.initMap();
