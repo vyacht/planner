@@ -117,44 +117,7 @@
                                 <div class="col" style="width:80%; ">
                                     <div style="padding:10px;">
                                         {{#each sections}}
-                                        {{#js_if "this.type === 'public_transport'"}}
-                                        {{#js_if "this.mode === 'Train'"}}
-                                        <div class="chip">
-                                            <div class="chip-media bg-color-black">
-                                                <i class="icon f7-icons if-not-md">plus_circle</i>
-                                                <i class="icon material-icons md-only">directions_train</i>
-                                            </div>
-                                            <div class="chip-label">{{this.name}}</div>
-                                        </div>
-                                        {{/js_if}}
-                                        {{#js_if "this.mode === 'Bus'"}}
-                                        <div class="chip">
-                                            <div class="chip-media bg-color-black">
-                                                <i class="icon f7-icons if-not-md">plus_circle</i>
-                                                <i class="icon material-icons md-only">directions_bus</i>
-                                            </div>
-                                            <div class="chip-label">{{this.name}}</div>
-                                        </div>
-                                        {{/js_if}}
-                                        {{/js_if}}
-                                        {{#js_if "this.type === 'transfer'"}}
-                                        <div class="chip">
-                                            <div class="chip-media bg-color-black">
-                                                <i class="icon f7-icons if-not-md">plus_circle</i>
-                                                <i class="icon material-icons md-only">directions_walk</i>
-                                            </div>
-                                            <div class="chip-label">{{this.duration}}min</div>
-                                        </div>
-                                        {{/js_if}}
-                                        {{#js_if "this.type === 'waiting'"}}
-                                        <div class="chip">
-                                            <div class="chip-media bg-color-black">
-                                                <i class="icon f7-icons if-not-md">plus_circle</i>
-                                                <i class="icon material-icons md-only">hourglass_empty</i>
-                                            </div>
-                                            <div class="chip-label">{{this.duration}}min</div>
-                                        </div>
-                                        {{/js_if}}
+                                        {{journeySectionChip this}}
                                         {{/each}}
                                     </div>
                                 </div>
@@ -179,6 +142,7 @@
 <script>
     import Journeys from '../js/journey.js';
     import Utils from '../js/utils.js';
+    import Ux from '../js/ux.js';
     export default {
         data: function () {
             var self = this;
@@ -194,6 +158,9 @@
             }
         },
         methods: {
+            getMaterialSectionIcon: function(type, mode) {
+                Ux.getMaterialSectionIcon(type, mode);
+            },
             openJourney: function (id) {
                 var self = this;
                 var app = self.$app;

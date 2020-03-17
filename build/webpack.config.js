@@ -23,7 +23,9 @@ module.exports = {
   entry: {
     app: ['./src/js/app.js',
      './src/js/journey.js', 
-     './src/js/utils.js' ],
+     './src/js/utils.js' ,
+     './src/js/ux.js' 
+    ],
   },
   output: {
     path: resolvePath(isCordova ? 'cordova/www' : 'www'),

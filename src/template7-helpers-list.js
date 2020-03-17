@@ -7,4 +7,4 @@
 */
 
 // restart webpack!!!!
-module.exports = ['transportChipClick', 'mainDepartureList'];
+module.exports = ['transportChipClick', 'mainDepartureList', 'journeySectionChip'];

@@ -16,6 +16,7 @@ import routes from './routes.js';
 
 // Import main app component
 import App from '../app.f7.html';
+import Ux from './ux.js';
 
 // restart webpack when registering new or change helper name!!!!
 Template7.registerHelper('transportChipClick', function (id, label, filter, options) {
@@ -29,6 +30,30 @@ Template7.registerHelper('transportChipClick', function (id, label, filter, opti
     r += label;
     r += '</span>';
     // console.log(id, filter, r);
+    return r;
+});
+
+function getSectionLabel(section) {
+    if (section.type == 'public_transport') {
+        return section.name;
+    } else if (section.type == 'transfer') {
+        return section.duration + "min";
+    } else if (section.type == 'waiting') {
+        return section.duration + "min";
+    }
+}
+
+Template7.registerHelper('journeySectionChip', function (section) {
+
+    var r = '<div class="chip">';
+    r+= '<div class="chip-media bg-color-black">';
+    r+= '   <i class="icon f7-icons if-not-md">plus_circle</i>';
+    r+= '   <i class="icon material-icons md-only">' +
+        Ux.getMaterialSectionIcon(section.type, section.mode) + '</i>';
+    r+= '</div>';
+    r+= '<div class="chip-label">' + getSectionLabel(section) + '</div>';
+    r+= '</div>';
+
     return r;
 });
 
