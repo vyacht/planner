@@ -11,51 +11,53 @@
         </div>
 
 
-            <div id="journey-sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
-                <div class="sheet-modal-inner">
-                    <div class="swipe-handler"></div>
+        <div id="journey-sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
+            <div class="sheet-modal-inner">
+                <div class="swipe-handler"></div>
+                <!-- 
                     <div class="sheet-modal-swipe-step">
                         <div class="margin-top text-align-left"
                             style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
                             This is a test
                         </div>
                     </div>
+                    -->
 
-            {{#journey}}
-            {{#sections}}
-            {{#js_if 'this.type == "public_transport"'}}
+                {{#journey}}
+                {{#sections}}
+                {{#js_if 'this.type == "public_transport"'}}
 
-            <div class="card">
-                <div class="card-content ">
-                    <div class="row-journey">
-                        <div class="col-journey-time">{{departureTime}}</div>
-                        <div class="col-journey-graphics-top">&nbsp;</div>
-                        <div class="col-journey-main">{{departurePlace}}</div>
-                    </div>
-                    <div class="row-journey">
-                        <div class="col-journey-time">&nbsp;</div>
-                        
-                        <div class="col-journey-graphics-mid">
-                            &nbsp;
+                <div class="card">
+                    <div class="card-content ">
+                        <div class="row-journey">
+                            <div class="col-journey-time">{{departureTime}}</div>
+                            <div class="col-journey-graphics-top">&nbsp;</div>
+                            <div class="col-journey-main">{{departurePlace}}</div>
                         </div>
-                        <div class="col-journey-main-mid">
-                            {{journeySectionChip this}}
-                            ({{duration}} min)
+                        <div class="row-journey">
+                            <div class="col-journey-time">&nbsp;</div>
+
+                            <div class="col-journey-graphics-mid">
+                                &nbsp;
+                            </div>
+                            <div class="col-journey-main-mid">
+                                {{journeySectionChip this}}
+                                ({{duration}} min)
+                            </div>
                         </div>
-                    </div>
-                    <div class="row-journey">
-                        <div class="col-journey-time">{{arrivalTime}}</div>
-                        <div class="col-journey-graphics-bottom">&nbsp;</div>
-                        <div class="col-journey-main">{{arrivalPlace}}</div>
+                        <div class="row-journey">
+                            <div class="col-journey-time">{{arrivalTime}}</div>
+                            <div class="col-journey-graphics-bottom">&nbsp;</div>
+                            <div class="col-journey-main">{{arrivalPlace}}</div>
+                        </div>
                     </div>
                 </div>
+                {{/js_if}}
+                {{/sections}}
+                {{/journey}}
+
             </div>
-            {{/js_if}}
-            {{/sections}}
-            {{/journey}}
-                    
-                </div>
-            </div>
+        </div>
 
 
     </div>
@@ -98,6 +100,64 @@
                 self.tripLayer = L.geoJSON().addTo(self.mymap);
                 self.mapInitialized = true;
             },
+            drawTrip: function () {
+                var self = this;
+                if(!self.journey) {
+                    return;
+                }
+                console.log("DRAW", self.journey);
+
+                if(self.tripLayer) {
+                    //console.log("adding trip layer");
+                    var lineStyle = {
+                        "color": "#4285F4",
+                        "weight": 5,
+                        "opacity": 0.65
+                    };
+                    var markerStyle = {
+                        "color": "#4285F4",
+                        "fillColor": "#ffffff",
+                        "weight": 2,
+                        "opacity": 1
+                    };
+
+                    var bbox = {},
+                        sections = self.journey.sections;
+
+                    for (var s = 0; s < sections.length; s++) {
+                        //console.log(sections[s].geojson);
+                        var sec = sections[s];
+                        if (sec.geojson) {
+                            self.tripLayer.addData(sec.geojson);
+                            bbox = Utils.getBoundingBox(bbox, sec.geojson);
+                        }
+                    }
+                    self.tripLayer.setStyle(lineStyle);
+
+                    for (var s = 0; s < sections.length; s++) {
+                        //console.log(sections[s].geojson);
+                        var sec = sections[s];
+                        if (sec.departurePosition)
+                            L.circleMarker(sec.departurePosition, {
+                                radius: 5
+                            }).addTo(self.markerLayerGroup);
+                        if (sec.departurePosition)
+                            L.circleMarker(sec.arrivalPosition, {
+                                radius: 5
+                            }).addTo(self.markerLayerGroup);
+                    }
+                    //self.markerLayerGroup.setStyle(markerStyle);
+
+                    var lbbox = [
+                        [bbox.latMin, bbox.lonMin],
+                        [bbox.latMax, bbox.lonMax],
+                    ];
+
+                    //console.log(lbbox);
+                    self.mymap.fitBounds(lbbox);
+                    //L.rectangle(lbbox, {color: "#ff7800", weight: 1}).addTo(self.mymap);
+                }
+            },
             getTestJourney: function () {
                 var self = this;
                 var app = self.$app;
@@ -122,56 +182,7 @@
                     self.$setState({
                         journey: data[0]
                     });
-                    if(self.tripLayer) {
-                        console.log("adding trip layer");
-                        var lineStyle = {
-                            "color": "#4285F4",
-                            "weight": 5,
-                            "opacity": 0.65
-                        };
-                        var markerStyle = {
-                            "color": "#4285F4",
-                            "fillColor": "#ffffff",
-                            "weight": 2,
-                            "opacity": 1
-                        };
 
-                        var bbox = {}, 
-                            sections = data[0].sections;
-                        for(var s= 0; s < sections.length; s++) {
-                            //console.log(sections[s].geojson);
-                            var sec = sections[s];
-                            if(sec.geojson) {
-                                self.tripLayer.addData(sec.geojson);
-                                bbox = Utils.getBoundingBox(bbox, sec.geojson);
-                            }
-                        }
-                        self.tripLayer.setStyle(lineStyle);              
-
-                        for(var s= 0; s < sections.length; s++) {
-                            //console.log(sections[s].geojson);
-                            var sec = sections[s];
-                            if(sec.departurePosition)
-                                L.circleMarker(sec.departurePosition, {
-                                    radius: 5
-                                }).addTo(self.markerLayerGroup);
-                            if(sec.departurePosition)
-                                L.circleMarker(sec.arrivalPosition, {
-                                    radius: 5
-                                }).addTo(self.markerLayerGroup);
-                        }
-                        self.markerLayerGroup.setStyle(markerStyle);      
-
-                        var lbbox = [
-                            [bbox.latMin, bbox.lonMin],
-                            [bbox.latMax, bbox.lonMax],
-                        ];
-
-                        //console.log(lbbox);
-                        self.mymap.fitBounds(lbbox);
-                        //L.rectangle(lbbox, {color: "#ff7800", weight: 1}).addTo(self.mymap);
-                    }
-                    
                 });
             }
         },
@@ -190,18 +201,22 @@
                     self.sheetSwipeToStep.open();
                 }
 
-                self.getTestJourney();
-                //console.log("PAGE INIT JOURNEY", self.$root.journey);
-                //self.$setState({journey: this.$root.selectedJourney});
             },
             pageAfterIn: function () {
                 var self = this;
-                if (self.mapInitialized) return;
-                if (!window.L) {
-                    //self.loadMapAssets();
-                    return;
+                //console.log("PAGE AFTER IN JOURNEY", self.$root.selectedJourney);
+                if (!self.mapInitialized) {
+                    if (!window.L) {
+                        //self.loadMapAssets();
+                        return;
+                    }
+                    self.initMap();
                 }
-                self.initMap();
+                //self.getTestJourney();
+                self.journey= this.$root.selectedJourney
+                self.drawTrip();
+                self.$update();
+
             },
             pageBeforeOut: function () {
                 var self = this;

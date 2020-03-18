@@ -8,6 +8,8 @@ var Ux = {
             }
         } else if (type == 'transfer') {
             return "directions_walk";
+        } else if ((type == 'crow_fly') && (mode == 'walking')) {
+            return "directions_walk";
         } else if (type == 'waiting') {
             return "hourglass_empty";
         }
