@@ -38,6 +38,8 @@ function getSectionLabel(section) {
         return section.name;
     } else if (section.type == 'transfer') {
         return section.duration + "min";
+    } else if ((section.type == 'crow_fly') && (section.mode == 'walking')) {
+        return section.duration + "min";
     } else if (section.type == 'waiting') {
         return section.duration + "min";
     }

@@ -85,10 +85,16 @@ var Journeys = {
                             }
                         }
 
+                        var mode = ""; 
+                        if (ss.type == "public_transport") {
+                            mode = ss.display_informations.commercial_mode;
+                        } else if (ss.type == "crow_fly") {
+                            mode = ss.mode;
+                        }
+
                         var sec = {
                             type: ss.type,
-                            mode: ss.type == "public_transport" ?
-                                ss.display_informations.commercial_mode : "",
+                            mode: mode,
                             duration: Math.round(ss.duration / 60),
                             name: label,
                             departureTime: dt.format("HH:mm"),
