@@ -27,7 +27,7 @@ var routes = [
     component: BuyTicket,
   },
   {
-    path: '/journey/journey/:journeyId/',
+    path: '/journey',
     //path: '/',
     name: 'journey',
     component: Journey,
