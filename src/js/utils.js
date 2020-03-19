@@ -45,7 +45,39 @@ var Utils = {
         // Returns an object that contains the bounds of this GeoJSON data.
         // The keys describe a box formed by the northwest (xMin, yMin) and southeast (xMax, yMax) coordinates.
         return bounds;
-    }
+    },
+    /**
+        Returns the point that is a distance and heading away from
+        the given origin point.
+
+        @param {L.LatLng} latlng: origin point
+        @param {float} heading: heading in degrees, clockwise from 0 degrees north.
+        @param {float} distance: distance in meters
+        @returns {L.latLng} the destination point.
+        Many thanks to Chris Veness at http://www.movable-type.co.uk/scripts/latlong.html
+        for a great reference and examples.
+        Code here: http://makinacorpus.github.io/Leaflet.GeometryUtil/leaflet.geometryutil.js.html
+    */
+    destination: function (latlng, heading, distance) {
+        heading = (heading + 360) % 360;
+        var rad = Math.PI / 180,
+            radInv = 180 / Math.PI,
+            R = 6378137, // approximation of Earth's radius
+            lon1 = latlng.lng * rad,
+            lat1 = latlng.lat * rad,
+            rheading = heading * rad,
+            sinLat1 = Math.sin(lat1),
+            cosLat1 = Math.cos(lat1),
+            cosDistR = Math.cos(distance / R),
+            sinDistR = Math.sin(distance / R),
+            lat2 = Math.asin(sinLat1 * cosDistR + cosLat1 *
+                sinDistR * Math.cos(rheading)),
+            lon2 = lon1 + Math.atan2(Math.sin(rheading) * sinDistR *
+                cosLat1, cosDistR - sinLat1 * Math.sin(lat2));
+        lon2 = lon2 * radInv;
+        lon2 = lon2 > 180 ? lon2 - 360 : lon2 < -180 ? lon2 + 360 : lon2;
+        return L.latLng([lat2 * radInv, lon2]);
+    },
 };
 
 export default Utils;
