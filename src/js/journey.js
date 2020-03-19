@@ -3,13 +3,37 @@
 import Framework7 from 'framework7/framework7.esm.bundle.js';
 
 var Journeys = {
+    apiVersion: "v1",
     port: 9191,
     baseUrl: "http://localhost",
     instance: "default",
-    apiVersion: "v1",
+    /*
+    port: null,
+    baseUrl: "https://api.navitia.io",
+    instance: "de",
+    username: "",
+    */
 
+    // assemble the URL
     getUrl: function() {
-        return this.baseUrl + ":" + this.port + "/" + this.apiVersion + "/coverage/" + this.instance;
+        var url = this.baseUrl;
+        if(this.port && this.port > 0) {
+            url += ":" + this.port;
+        }
+        return url + "/" + this.apiVersion + "/coverage/" + this.instance;
+    },
+    // assemble basic request data
+    getData: function() {
+        var d = {
+            format: "json",
+            callback: function () {
+                return true;
+            }
+        };
+        if(this.username && this.username != "") {
+            d.key = this.username;
+        }
+        return d;
     },
     getParamByPlaceType: function(place) {
         if(place.type == "stop_area") {
@@ -38,11 +62,9 @@ var Journeys = {
             url: journeyUrl,
             method: 'GET',
             crossDomain: true,
-            data: {
-                format: "json",
-                callback: function () {
-                    return true;
-                }
+            data: this.getData(),
+            error: function(xhr, status) {
+                console.log("error: " + status);
             },
             success: function (data) {
 
@@ -129,16 +151,16 @@ var Journeys = {
     },
     getPlaces: function (query, limit, callback) {
         var placesUrl = this.getUrl() + "/places";
+        var d = this.getData();
+        d.q = query;
+
         Framework7.request({
             url: placesUrl,
             method: 'GET',
             crossDomain: true,
-            data: {
-                format: "json",
-                q: query,
-                callback: function () {
-                    return true;
-                }
+            data: d,
+            error: function(xhr, status) {
+                console.log("error: " + status);
             },
             success: function (data) {
                 var places = JSON.parse(data).places;
@@ -158,11 +180,9 @@ var Journeys = {
             url: departuresUrl,
             method: 'GET',
             crossDomain: true,
-            data: {
-                format: "json",
-                callback: function () {
-                    return true;
-                }
+            data: this.getData(),
+            error: function(xhr, status) {
+                console.log("error: " + status);
             },
             success: function (data) {
                 var deps = [];
@@ -216,15 +236,10 @@ var Journeys = {
             this.getUrl() + "/stop_areas/" +
             stopArea.id + "/stop_schedules";
 
-        var getData = {
-            format: "json",
-            callback: function () {
-                return true;
-            }
-        };
+        var d = this.getData();
 
         if (page > 0) {
-            getData.start_page = page;
+            d.start_page = page;
         } else {
             llines = {};
         }
@@ -237,7 +252,10 @@ var Journeys = {
             url: stopSchedulesUrl,
             method: 'GET',
             crossDomain: true,
-            data: getData,
+            data: d,
+            error: function(xhr, status) {
+                console.log("error: " + status);
+            },
             success: function (data) {
 
                 /*
