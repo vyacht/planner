@@ -141,6 +141,13 @@
     --journey-transport-chip-padding: 8px;
     --journey-graphics-size: 8px;
     --journey-graphics-color:  rgb(247, 68, 14);
+
+    --f7-list-item-padding-horizontal: 8px;
+    --f7-list-media-item-padding-horizontal: 8px;
+    --f7-list-item-media-margin: 8px;
+    --f7-list-item-after-padding: 8px;
+
+    --f7-fab-size: 48px;
 }
 
   .col-journey-time {

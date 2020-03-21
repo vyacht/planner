@@ -3,44 +3,51 @@
         <div class="page-content">
             <div class="demo-map-container" style="z-index: 0; height: 100%"></div>
 
-            <div class="card" style="position: absolute; z-index: 2; width: 80%; left: 32px; top: 6px;">
+            <div class="card"
+                style="position: absolute; z-index: 2; width: 90%; top: 6px; left: 50%; transform: translate(-50%,0);">
                 <div class="card-content" style="background-color: white; ">
 
                     <!-- Search box formated as list with 1 item-->
-                    <div class="list no-hairlines">
+                    <div class="list no-safe-areas">
                         <ul>
-                            <li class="item-content">
-                                <div class="item-media">
-                                    <div class="menu">
-                                        <div class="menu-inner">
-                                            <a href="#" class="menu-item icon-only panel-open" data-panel="left">
-                                                <div class="menu-item-content icon-only"
-                                                    style="background: white; color: gray;">
-                                                    <i class="icon material-icons">menu</i>
-                                                </div>
-                                            </a>
+                            <li>
+                                <label class="item-radio item-content">
+                                    <div class="item-media">
+                                        <a href="#" class="panel-open" data-panel="left">
+                                            <i class="icon f7-icons if-not-md">plus_circle</i>
+                                            <i class="icon material-icons md-only">menu</i>
+                                        </a>
+                                    </div>
+                                    <div class="item-inner">
+                                        <!-- <div class="item-title"> -->
+                                        <input id="autocomplete-dropdown-expand-to-dest" type="text"
+                                            placeholder="Search your destination" @keyup='onKeyUp()' />
+                                        <!-- </div> -->
+                                    </div>
+                                    <div class="item-after">
+                                        <div class="menu" style="align-items: right;">
+                                            <div class="menu-inner">
+                                                {{#js_if 'this.typingStarted'}}
+                                                <a class="menu-item" @Click='onclearSearchBox()'>
+                                                    <div class="menu-item-content icon-only"
+                                                        style="background: white; color: var(--f7-input-clear-button-color);">
+                                                        <i class="icon material-icons">cancel</i>
+                                                    </div>
+                                                </a>
+                                                {{else}}
+                                                <!--
+                                                <a class="menu-item" @Click='closeAndRoute("planner")'>
+                                                    <div class="menu-item-content icon-only"
+                                                        style="background: white; color: #4285F4;">
+                                                        <i class="icon material-icons">directions</i>
+                                                    </div>
+                                                </a>
+                                                -->
+                                                {{/js_if}}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="item-inner">
-                                    <input id="autocomplete-dropdown-expand-to-dest" type="text"
-                                        style="color: black; align-items: left;" placeholder="Search your destination"
-                                        @keyup='onKeyUp()'>
-                                    <span class="input-clear-button" @Click='onclearSearchBox()'></span>
-                                </div>
-
-                                <div class="item-after">
-                                    <div class="menu" style="align-items: right;">
-                                        <div class="menu-inner">
-                                            <a class="menu-item" @Click='closeAndRoute("planner")'>
-                                                <div class="menu-item-content icon-only"
-                                                    style="background: white; color: #4285F4;">
-                                                    <i class="icon material-icons">directions</i>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                                </label>
                             </li>
                         </ul>
 
@@ -50,6 +57,28 @@
             </div>
         </div>
 
+        <!--
+        <div id="main-test-object" class="card"
+            style="position: absolute; z-index: 20000; width: 80%; left: 32px; bottom: 0; transform: translate3d(0, calc(var(--vy-swipe-step, 0)), 0);">
+            <div class="card-content" style="background-color: white; ">
+                Just a testo
+            </div>
+        </div>
+        -->
+        <div id="main-fab">
+            <div id="main-nav-btn" class="fab"
+                style="right: 16px; bottom: 16px; transform: translate3d(0, calc(var(--vy-swipe-step-progress, 0)), 0);">
+                <a href="#" @Click='closeAndRoute("planner")'>
+                    <i class="icon material-icons">directions</i>
+                </a>
+            </div>
+            <div id="main-pos-btn" class="fab"
+                style="right: 16px; bottom: calc(16px + var(--f7-fab-size) + 8px); transform: translate3d(0, calc(var(--vy-swipe-step-progress, 0)), 0);">
+                <a href="#" @click='setPositionToCurrent'>
+                    <i class="icon material-icons">gps_fixed</i>
+                </a>
+            </div>
+        </div>
 
         <div id="sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
 
@@ -59,10 +88,12 @@
 
                 <div class="sheet-modal-swipe-step">
 
+                    {{#js_if 'this.selectedPlace && this.selectedPlace.place'}}
                     <div class="margin-top text-align-left"
                         style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
-                        {{stopArea.name}}
+                        {{selectedPlace.place.name}}
                     </div>
+                    {{/js_if}}
 
                     <div class="list no-hairlines" style="margin:12px">
                         <ul>
@@ -82,7 +113,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </li>
                             {{/if}}
                             {{#if linesTrain}}
@@ -94,10 +124,10 @@
                                 <div class="item-inner">
                                     <div class="item-title">
                                         <div class="item-header">Train</div>
-                                        <div class="disable-scrollbars" style="overflow-x: auto; overflow-y: hidden;"></div>
-                                        {{#each linesTrain}}
-                                        {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
-                                        {{/each}}
+                                        <div class="disable-scrollbars" style="overflow-x: auto; overflow-y: hidden;">
+                                            {{#each linesTrain}}
+                                            {{transportChipClick id label @root.lineFilter class="transport-chip-clickable"}}
+                                            {{/each}}
                                         </div>
                                     </div>
                                 </div>
@@ -105,80 +135,76 @@
                             {{/if}}
                         </ul>
                     </div>
-
-                    <!-- 
-                    <div class="padding-horizontal padding-bottom">
-                        <div class="margin-top text-align-center">Swipe up for more details</div>
-                    </div>
-                        -->
-                        <div class="long-seperator"></div>
                 </div>
-
-                <!-- 
-                <div class="block-title block-title-small margin-top">Next departures:</div>
-                -->
-
+                <div class="long-seperator"></div>
                 {{#if departures}}
-
-                <!-- 
-                    <div class="navbar">
-                        <div class="navbar-bg"></div>
-                        <div class="navbar-inner sliding">
-                            <div class="title sliding">Next departures</div>
-                        </div>
-                    </div>
-                    -->
                 <div class="list no-hairlines" style="margin:12px;">
                     <ul>
                         {{mainDepartureList departures filteredDepartures lineFilter}}
                     </ul>
                 </div>
+                {{#else}}
+                <div></div>
+                {{/if}}
             </div>
-            {{/if}}
         </div>
-    </div>
     </div>
 </template>
 <script>
     import Journeys from '../js/journey.js';
+    import Utils from '../js/utils.js';
     export default {
         data: function () {
             return {
                 mapInitialized: false,
                 mymap: {},
                 markerLayerGroup: {},
-                stopArea: {},
+                selectedPlace: {},
                 linesBus: null,
                 linesTrain: null,
                 linesFerry: null,
                 departures: null,
                 departuresByLine: null,
                 lineFilter: null,
-                filteredDepartures: null
+                filteredDepartures: null,
+                typingStarted: false // used for showing close or route button
             }
         },
         methods: {
             resetPlace: function () {
                 this.$setState({
-                    stopArea: {},
+                    selectedPlace: {},
                     linesBus: null,
                     linesTrain: null,
                     linesFerry: null,
                     departures: null,
                     departuresByLine: null,
                     lineFilter: null,
-                    filteredDepartures: null
+                    filteredDepartures: null,
+                    typingStarted: false
                 });
                 this.markerLayerGroup.clearLayers();
+                this.sheetSwipeToStep.close();
             },
             /* records any key press in input box */
             onKeyUp: function () {
                 var inputText = this.$$('#autocomplete-dropdown-expand-to-dest').val();
                 if (!inputText || inputText.length == 0)
-                    this.resetPlace();
+                    this.resetPlace()
+                else
+                    this.$setState({
+                        typingStarted: true
+                    });
             },
             /* button to input box has been hit */
             onclearSearchBox: function () {
+                const $inputEl = this.$$('#autocomplete-dropdown-expand-to-dest');
+                const previousValue = $inputEl.val();
+                $inputEl
+                    .val('')
+                    .trigger('input change')
+                    .focus()
+                    .trigger('input:clear', previousValue);
                 this.resetPlace();
             },
             /* iterative through all pages */
@@ -224,9 +250,15 @@
             },
             getDepartures: function (stopArea) {
                 var self = this;
-                Journeys.getDeparturesFromStopArea(stopArea, function(data) {
+                Journeys.getDeparturesFromStopArea(stopArea, function (data) {
                     //console.log(data);
-                    self.$setState({departures: data.slice(0, 3)});
+                    self.departures = data.slice(0, 3)
+                    self.$update(() => {
+                        // DOM updated
+                        self.sheetSwipeToStep.open();
+                        self.sheetSwipeToStep.stepOpen();
+                    });
+
                 });
 
             },
@@ -234,11 +266,7 @@
 
                 var self = this;
 
-                Journeys.getLines(stopArea, function(stopArea, lines, departures) {
-
-
-                    // Find matched items
-                    self.sheetSwipeToStep.open();
+                Journeys.getLines(stopArea, function (stopArea, lines, departures) {
 
                     // stupid but it seems std template7 does not understand dicts
                     // - shovel distinct list of lines over to normal array
@@ -259,38 +287,10 @@
                         // maintain null for not set for T7
                         linesBus: ("Bus" in ll) ? ll["Bus"] : null,
                         linesTrain: ("Train" in ll) ? ll["Train"] : null,
-                        stopArea: stopArea,
                         departuresByLine: departures
                     });
 
                     self.getDepartures(stopArea);
-                });
-            },
-            updatePlace: function (place) {
-
-                console.log("PLACE: ", place)
-
-                // place can be anything
-                var stopArea = place.stop_area;
-
-                var pos = [stopArea.coord.lat, stopArea.coord.lon];
-
-                var self = this;
-                var app = self.$app;
-
-                // set marker and center map view
-                self.mymap.setView(pos, 15);
-                self.markerLayerGroup.clearLayers();
-                L.marker(pos).addTo(self.markerLayerGroup);
-
-
-                self.getLines(stopArea);
-
-                this.$root.$setState({
-                    toJourney: {
-                        type: "stop_area",
-                        place: stopArea
-                    }
                 });
             },
             closeAndRoute: function (route) {
@@ -312,21 +312,69 @@
                 });
             },
             toggleSwipeStep: function () {
-                console.log("TOGGLE STEP");
-                this.sheetSwipeToStep.stepToggle();
-                
-                var el2 = this.sheetSwipeToStep;
-                //console.log(el2);
-                console.log("HEIGHT: ", 
-                    el2.$el[0].offsetTop, 
-                    el2.$el[0].offsetHeight);
-                
+                //console.log("TOGGLE STEP");
+                //this.sheetSwipeToStep.stepToggle();
+                //TODO - doesn't work together with swipeing as the click gets through even then 
+            },
+            fitMapToPoint(latLng, radius, paddingBottom) {
+                var self = this;
+                var latLng1 = Utils.destination(latLng, 45, radius),
+                    latLng2 = Utils.destination(latLng, 225, radius);
+
+                var bb = L.latLngBounds(latLng2, latLng1);
+                console.log(bb, latLng2, latLng1);
+                self.mymap.fitBounds(bb, {
+                    paddingTopLeft: [0, 0],
+                    paddingBottomRight: [0, paddingBottom] // its x, y
+                });
+            },
+            updatePlace: function (type, place) {
+
+                var self = this;
+                var app = self.$app;
+
+                console.log("PLACE: ", place)
+
+                // place can be anything
+                var pos = L.latLng(place.coords.lat, place.coords.lon);
+
+                self.selectedPlace = {
+                    type: type,
+                    place: place
+                };
+
+                // set marker and center map view
+                self.fitMapToPoint(pos, 500, 0);
+                self.markerLayerGroup.clearLayers();
+                L.marker(pos).addTo(self.markerLayerGroup);
+
+                if (type == "stop_area") {
+                    self.getLines(place);
+                }
+                this.$root.$setState({
+                    toJourney: self.selectedPlace
+                });
+            },
+            setPositionToCurrent: function () {
+                var self = this;
+                Utils.getPosition(function (data) {
+                    //console.log(data);
+                    self.updatePlace("current_position", data.place)
+                });
             },
             initMap: function () {
+                var latLng = L.latLng(59.8579, 17.6474);
+
                 var self = this;
                 self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
                     zoomControl: false
-                }).setView([59.8, 17.6], 10);
+                });
+                self.mymap.on('click', function (ev) {
+                    console.log(ev.latlng); // 
+                });
+
+                self.fitMapToPoint(latLng, 25000, 0);
+
                 var topoUrl = 'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
                 var topoAttribution =
                     'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
@@ -340,6 +388,39 @@
 
                 self.markerLayerGroup = L.layerGroup().addTo(self.mymap);
                 self.mapInitialized = true;
+            },
+            sheetOnTheMove: function (progress, open = false) {
+                // taken from sheet-class.js
+                var self = this;
+                var el = self.sheetSwipeToStep.$el;
+                const $swipeStepEl = el.find('.sheet-modal-swipe-step').eq(0);
+                if ($swipeStepEl.length) {
+                    var offsetHeight = el[0].offsetHeight;
+                    var swipeStepTranslate =
+                        offsetHeight - ($swipeStepEl.offset().top - el.offset().top + $swipeStepEl[0].offsetHeight);
+
+                    self.swipeStepTranslate = swipeStepTranslate;
+                    self.offsetHeight = offsetHeight;
+
+                    // negative
+                    var sstep = -offsetHeight + swipeStepTranslate;
+                    var sstep_progress = Math.round(-offsetHeight + swipeStepTranslate * (1 - progress));
+
+                    /*console.log("swipeStepTranslate",
+                        swipeStepTranslate, offsetHeight, Math.round(progress * 100) + "%", sstep_progress,
+                        sstep); */
+
+                    self.$$('#main-fab')[0].style.setProperty("--vy-swipe-step", "" + sstep + "px");
+                    self.$$('#main-fab')[0].style.setProperty("--vy-swipe-open", "" + (-offsetHeight) + "px");
+                    self.$$('#main-fab')[0].style.setProperty("--vy-swipe-step-progress", "" + sstep_progress +
+                        "px");
+
+                    if (self.selectedPlace && open) {
+                        var coord = self.selectedPlace.place.coords;
+                        var pos = L.latLng(coord.lat, coord.lon);
+                        self.fitMapToPoint(pos, 500, offsetHeight);
+                    }
+                }
             },
         },
         on: {
@@ -370,7 +451,7 @@
                             const ac = this;
                             //if (ac.params.renderItem) return ac.params.renderItem.call(ac, item, index);
                             let itemHtml;
-                            const itemValue = item.value && typeof item.value === 'string' ? 
+                            const itemValue = item.value && typeof item.value === 'string' ?
                                 item.value.replace(/"/g, '&quot;') : item.value;
                             // we only do the dropdown case here, for details see autocomplete-class.js renderItem()
                             if (item.placeholder) {
@@ -410,30 +491,58 @@
                             }
                             // Show Preloader
                             autocomplete.preloaderShow();
-                            Journeys.getPlaces(query, 10, function(places) {
-                            //console.log();
-                            render(places);
-                            // Hide Preoloader
-                            autocomplete.preloaderHide();
-                        });
+                            Journeys.getPlaces(query, 10, function (places) {
+                                //console.log();
+                                render(places);
+                                // Hide Preoloader
+                                autocomplete.preloaderHide();
+                            });
                         },
                         on: {
                             change: function (value) {
-                                self.updatePlace(value[0]);
+                                var sa = value[0].stop_area;
+
+                                self.updatePlace("stop_area", {
+                                        coords: sa.coord,
+                                        name: sa.name,
+                                        label: sa.label,
+                                        id: sa.id
+                                    }
+                                );
                             }
                         }
                     };
                 var acFrom = app.autocomplete.create(self.autocompleteToDest);
 
                 if (!self.sheetSwipeToStep) {
-                    self.sheetSwipeToStep = self.$app.sheet.create({
+                    self.sheet = {
                         el: '.demo-sheet-swipe-to-step',
-                        backdrop: false,
+                        backdrop: false, // want to display map nicely - not dark
                         swipeToClose: true,
                         swipeToStep: true,
                         push: true,
-                    });
-                    // self.sheetSwipeToStep.open();
+                        on: {
+                            stepProgress: function (value, progress) {
+                                //console.log('Sheet stepProgress');
+                                self.sheetOnTheMove(progress, false);
+                            },
+                            open: function (sheet) {
+                                //console.log('Sheet open');
+                                self.sheetOnTheMove(1, true);
+                            },
+                            opened: function (sheet) {
+                                //console.log('Sheet opened');
+                            },
+                            stepOpen: function (sheet) {
+                                //console.log('Sheet step open');
+                            },
+                            stepClose: function (sheet) {
+                                //console.log('Sheet step closed');
+                                //self.sheetOnTheMove(0, false);
+                            },
+                        }
+                    };
+                    self.sheetSwipeToStep = app.sheet.create(self.sheet);
                 }
 
             },

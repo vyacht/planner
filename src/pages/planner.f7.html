@@ -42,7 +42,7 @@
                         <ul>
                             <li class="item-content item-input">
                                 <div class="item-inner">
-                                    <div class="item-title item-label">From</div>
+                                    <!-- <div class="item-title item-label">From</div> -->
                                     <div class="item-input-wrap">
                                         <input id="autocomplete-dropdown-expand-from" type="text" placeholder="From">
                                         <span class="input-clear-button"></span>
@@ -55,7 +55,7 @@
                             </li>
                             <li class="item-content item-input">
                                 <div class="item-inner">
-                                    <div class="item-title item-label">To</div>
+                                    <!-- <div class="item-title item-label">To</div> -->
                                     <div class="item-input-wrap">
                                         <input id="autocomplete-dropdown-expand-to" 
                                             type="text" placeholder="To" value="">
@@ -302,7 +302,13 @@
                     self.toPlace= self.$root.toJourney;
 
                     //TODO: rendering of value with template
-                    self.$$('#autocomplete-dropdown-expand-to').val(self.$root.toJourney.place.name);
+                    if(self.$root.toJourney.type == "stop_area") {
+                        self.$$('#autocomplete-dropdown-expand-to').val(self.$root.toJourney.place.name);
+                    } else if(self.$root.toJourney.type == "current_position") {
+                        self.$$('#autocomplete-dropdown-expand-to').val("My position");
+                        console.log(self.$$('#autocomplete-dropdown-expand-to').attributes); //("data-value", "My position");
+                    }
+
                 }
 
                 var acTo = app.autocomplete.create(acTempl);

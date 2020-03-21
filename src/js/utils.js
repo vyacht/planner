@@ -8,7 +8,12 @@ var Utils = {
         var onSuccess = function (position) {
             callback({
                 type: "current_position",
-                place: position.coords
+                place: {
+                    coords: {
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    }
+                }
             });
         };
 
