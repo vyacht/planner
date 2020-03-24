@@ -350,10 +350,10 @@
 
                 if (type == "stop_area") {
                     self.getLines(place);
+                    this.$root.$setState({
+                        toJourney: self.selectedPlace
+                    });
                 }
-                this.$root.$setState({
-                    toJourney: self.selectedPlace
-                });
             },
             setPositionToCurrent: function () {
                 var self = this;
