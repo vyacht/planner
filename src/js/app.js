@@ -36,7 +36,7 @@ Template7.registerHelper('transportChipClick', function (id, label, filter, opti
 function getSectionLabel(section) {
     if (section.type == 'public_transport') {
         return section.name;
-    } else if (section.type == 'transfer') {
+    } else if (section.type == 'transfer' || section.type == 'street_network') {
         return section.duration + "min";
     } else if ((section.type == 'crow_fly') && (section.mode == 'walking')) {
         return section.duration + "min";
