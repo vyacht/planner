@@ -14,16 +14,15 @@
         <div id="journey-sheet-modal" class="sheet-modal demo-sheet-swipe-to-step" style="height:auto; ">
             <div class="sheet-modal-inner">
                 <div class="swipe-handler"></div>
-                <!-- 
-                    <div class="sheet-modal-swipe-step">
-                        <div class="margin-top text-align-left"
-                            style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
-                            This is a test
-                        </div>
-                    </div>
-                    -->
 
                 {{#journey}}
+                <div class="sheet-modal-swipe-step">
+                    <div class="margin-top text-align-left"
+                        style="margin:12px; padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));">
+                        <b>{{departureTime}} - {{arrivalTime}}</b> (Total duration ca {{duration}})
+                    </div>
+                </div>
+
                 {{#sections}}
                 {{#js_if 'this.type == "public_transport"'}}
 
@@ -77,6 +76,7 @@
             return {
                 mapInitialized: false,
                 journey: null,
+                journeyBoundingBox: null
             }
         },
         methods: {
@@ -88,6 +88,11 @@
                 var topoUrl = 'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
                 var topoAttribution =
                     'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
+
+                    self.mymap.on('click', function (ev) {
+                        self.offsetHeight = 151;
+                        self.fitToMap();
+                    });
 
                 L.tileLayer(
                     topoUrl, {
@@ -102,12 +107,12 @@
             },
             drawTrip: function () {
                 var self = this;
-                if(!self.journey) {
+                if (!self.journey) {
                     return;
                 }
                 console.log("DRAW", self.journey);
 
-                if(self.tripLayer) {
+                if (self.tripLayer) {
                     //console.log("adding trip layer");
                     var lineStyle = {
                         "color": "#4285F4",
@@ -148,14 +153,45 @@
                     }
                     //self.markerLayerGroup.setStyle(markerStyle);
 
-                    var lbbox = [
+                    self.journeyBoundingBox = [
                         [bbox.latMin, bbox.lonMin],
                         [bbox.latMax, bbox.lonMax],
                     ];
 
-                    //console.log(lbbox);
-                    self.mymap.fitBounds(lbbox);
-                    //L.rectangle(lbbox, {color: "#ff7800", weight: 1}).addTo(self.mymap);
+                    self.fitToMap();
+                }
+            },
+            fitToMap() {
+                var self = this;
+                if (self.journeyBoundingBox) {
+                    var offsetHeight = 0;
+                    if (self.offsetHeight) {
+                        offsetHeight = self.offsetHeight;
+                    }
+                    console.log("fitToMap(" + offsetHeight + ")");
+                    self.mymap.fitBounds(self.journeyBoundingBox, {
+                        paddingTopLeft: [0, 0],
+                        paddingBottomRight: [0, offsetHeight] // its x, y
+                    });
+                    /*
+                    L.rectangle(self.journeyBoundingBox, {
+                        color: "#ff7800",
+                        weight: 1
+                    }).addTo(self.mymap);
+                    */
+                }
+            },
+            sheetOnTheMove: function (progress, open = false) {
+                var self = this;
+                var el = self.sheetSwipeToStep.$el;
+                const $swipeStepEl = el.find('.sheet-modal-swipe-step').eq(0);
+                if ($swipeStepEl.length) {
+                    var offsetHeight = el[0].offsetHeight;
+                    /* for more positions see main.f7.html */
+                    self.offsetHeight = offsetHeight;
+                    if (open) {
+                        self.fitToMap();
+                    }
                 }
             },
             getTestJourney: function () {
@@ -182,29 +218,53 @@
                     self.$setState({
                         journey: data[0]
                     });
-
+                    self.drawTrip();
+                    self.$update(() => {
+                        // DOM updated
+                        self.sheetSwipeToStep.open();
+                        self.sheetSwipeToStep.stepOpen();
+                    });
                 });
-            }
+            },
         },
         on: {
             pageInit: function () {
                 var self = this;
-
+                console.log("PAGE INIT JOURNEY");
                 if (!self.sheetSwipeToStep) {
                     self.sheetSwipeToStep = self.$app.sheet.create({
-                        el: '.demo-sheet-swipe-to-step',
+                        el: '#journey-sheet-modal',
                         backdrop: false,
                         swipeToClose: true,
                         swipeToStep: true,
                         push: true,
+                        on: {
+                            stepProgress: function (value, progress) {
+                                console.log('Sheet stepProgress');
+                                self.sheetOnTheMove(progress, false);
+                            },
+                            open: function (sheet) {
+                                console.log('Sheet open');
+                                self.sheetOnTheMove(1, true);
+                            },
+                            opened: function (sheet) {
+                                //console.log('Sheet opened');
+                            },
+                            stepOpen: function (sheet) {
+                                //console.log('Sheet step open');
+                            },
+                            stepClose: function (sheet) {
+                                //console.log('Sheet step closed');
+                                //self.sheetOnTheMove(0, false);
+                            },
+                        }
                     });
-                    self.sheetSwipeToStep.open();
                 }
 
             },
             pageAfterIn: function () {
                 var self = this;
-                //console.log("PAGE AFTER IN JOURNEY", self.$root.selectedJourney);
+                console.log("PAGE AFTER IN JOURNEY", self.$root.selectedJourney);
                 if (!self.mapInitialized) {
                     if (!window.L) {
                         //self.loadMapAssets();
@@ -214,9 +274,13 @@
                 }
                 //self.getTestJourney();
                 self.journey= this.$root.selectedJourney
-                self.drawTrip();
-                self.$update();
-
+                
+                self.$update(() => {
+                        // DOM updated
+                        self.sheetSwipeToStep.open();
+                        self.sheetSwipeToStep.stepOpen();
+                        self.drawTrip();
+                    });
             },
             pageBeforeOut: function () {
                 var self = this;
