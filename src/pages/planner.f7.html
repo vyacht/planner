@@ -182,6 +182,7 @@
 
                 if(!self.toSet || !self.fromSet) return;
 
+                console.log("update Journey");
                 Journeys.getJourneyBetweenStops(this.fromPlace, this.toPlace, 10, function(data) {
                     console.log(data);
                     self.$setState({journeys: data});
@@ -192,18 +193,7 @@
             pageInit: function () {
                 var self = this;
                 var app = self.$app;
-                
-                /*
-                Utils.getPosition(function(place) {
-                    console.log(place);
-                    self.fromSet= true;
-                    self.fromPlace= place;
-
-                    // will call render function 
-                    self.updateJourneys(); 
-                });
-                */
-
+            
                 var acTempl = {
                     inputEl: '#autocomplete-dropdown-expand-from',
                     openIn: 'dropdown',
@@ -304,12 +294,24 @@
                     //TODO: rendering of value with template
                     if(self.$root.toJourney.type == "stop_area") {
                         self.$$('#autocomplete-dropdown-expand-to').val(self.$root.toJourney.place.name);
-                    } else if(self.$root.toJourney.type == "current_position") {
-                        self.$$('#autocomplete-dropdown-expand-to').val("My position");
-                        console.log(self.$$('#autocomplete-dropdown-expand-to').attributes); //("data-value", "My position");
                     }
-
                 }
+
+                if(!self.$root.fromJourney) {
+                    Utils.getPosition(function(place) {
+                        console.log("My position", place);
+                        self.fromSet= true;
+                        self.fromPlace= place;
+                        self.$$('#autocomplete-dropdown-expand-from').val("My position");
+                            //console.log(self.$$('#autocomplete-dropdown-expand-to').attributes); //("data-value", "My position");
+                        
+                        if(self.toSet) {
+                            self.updateJourneys();
+                        }
+                    });
+                }
+
+                
 
                 var acTo = app.autocomplete.create(acTempl);
                 /*
