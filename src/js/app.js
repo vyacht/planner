@@ -59,6 +59,31 @@ Template7.registerHelper('journeySectionChip', function (section) {
     return r;
 });
 
+Template7.registerHelper('formatCalendarDateTime', function (dateTime) {
+    if(!dateTime) return '';
+    return dateTime.calendar(null, {
+        sameDay: '[Today] HH:mm',
+        nextDay: '[Tomorrow] HH:mm',
+        nextWeek: 'dddd, DD. HH:mm',
+        lastDay: '[Yesterday] HH:mm',
+        lastWeek: '[Last] dddd, DD. HH:mm',
+        sameElse: 'D. MMM YYYY HH:mm'
+    });
+});
+
+Template7.registerHelper('formatCalendarDate', function (dateTime) {
+    if(!dateTime) return '';
+    return dateTime.calendar(null, {
+        sameDay: '[Today]',
+        nextDay: '[Tomorrow]',
+        nextWeek: 'dddd, DD. MMM',
+        lastDay: '[Yesterday]',
+        lastWeek: '[Last] dddd, DD. MMM',
+        sameElse: 'D. MMM YYYY'
+    });
+});
+
+
 function makeMainDeparturesListItem(departure) {
 
     var icon = "";

@@ -7,4 +7,9 @@
 */
 
 // restart webpack!!!!
-module.exports = ['transportChipClick', 'mainDepartureList', 'journeySectionChip'];
+module.exports = ['transportChipClick', 
+    'mainDepartureList', 
+    'journeySectionChip',
+    'formatCalendarDate',
+    'formatCalendarDateTime',
+];
