@@ -24,7 +24,8 @@ module.exports = {
     app: ['./src/js/app.js',
      './src/js/journey.js', 
      './src/js/utils.js' ,
-     './src/js/ux.js' 
+     './src/js/ux.js',
+     './src/js/wellknown.js',
     ],
   },
   output: {
