@@ -1,98 +1,69 @@
 <template>
     <div class="page" data-name="home">
 
-
-
-        <!-- Top Navbar -->
-        <div class="navbar">
-            <div class="navbar-bg"></div>
-            <div class="navbar-inner sliding">
-                <div class="left">
-                    <a href="#" class="link back panel-close">
-                        <i class="icon icon-back"></i>
-                        <span class="if-not-md">Back</span>
-                    </a>
-                </div>
-                <div class="title sliding">Plan journey</div>
-                <div class="right"></div>
-            </div>
-        </div>
-
-
-        <!-- Fixed Toolbar 
-        <div class="toolbar toolbar-bottom" style="height: 100px;">
-            <div class="toolbar-inner" style="padding: 16px;">
-                <div>&nbsp;</div>
-                <a href="/buy-ticket/" class="col button button-raised button-fill" style="width: 128px; display:flex;">
-                    <i class="icon f7-icons if-not-md">menu</i>
-                    <i class="icon material-icons if-md">card_travel</i>
-                    <span>Buy ticket</span>
-                </a>
-            </div>
-        </div>
-        -->
-
         <div class="page-content">
 
             <!-- searchbox from to start -->
             <div class="card demo-card-header-pic">
 
-                <div class="card-content card-content-padding">
-                    <div class="list no-hairlines-md">
-                        <ul>
-                            <li class="item-content item-input">
-                                <div class="item-inner">
-                                    <!-- <div class="item-title item-label">From</div> -->
-                                    <div class="item-input-wrap">
-                                        <input id="autocomplete-dropdown-expand-from" type="text" placeholder="From">
-                                        <span class="input-clear-button"></span>
-                                    </div>
-                                </div>
-                                <div class="item-after" style="padding: 8px;">
-                                    <i class="icon f7-icons if-not-md">plus_circle</i>
-                                    <i class="icon material-icons md-only">gps_fixed</i>
-                                </div>
-                            </li>
-                            <li class="item-content item-input">
-                                <div class="item-inner">
-                                    <!-- <div class="item-title item-label">To</div> -->
-                                    <div class="item-input-wrap">
-                                        <input id="autocomplete-dropdown-expand-to" 
-                                            type="text" placeholder="To" value="">
-                                        <span class="input-clear-button"></span>
-                                    </div>
-                                </div>
-                                <div class="item-after" style="padding: 8px;">
-                                    <i class="icon f7-icons if-not-md">arrow_up_arrow_down</i>
-                                    <i class="icon material-icons md-only">import_export</i>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
+                <div class="card-header" style="height: auto;">
+                    <a href="#" class="back link">
+                        <i class="icon icon-back" style="color: black"></i>
+                        <span class="if-not-md">Back</span>
+                    </a>
+
+                    <a href="#" @click="toggleTimePicker">
+                        <div style="display: flex;">
+                            <div>
+                                <i class="icon f7-icons if-not-md">plus_circle</i>
+                                <i class="icon material-icons md-only">query_builder</i>
+                            </div>
+                            <div style="padding-left: 8px;">
+                                {{formatCalendarDateTime departureDateTime}}
+                            </div>
+                        </div>
+                    </a>
+
                 </div>
 
-                <div class="card-footer">
-                    <div>
-                        <!-- need this here to avoid distributing chips left and right-->
-                        <div class="chip">
-                            <div class="chip-media bg-color-black">
-                                <i class="icon f7-icons if-not-md">plus_circle</i>
-                                <i class="icon material-icons md-only">home</i>
+                <div class="card-content card-content-padding">
+                    <div class="row-planner-searchbox">
+                        <div class="col-planner-searchbox-main">
+                            <div class="list no-hairlines-md">
+                                <ul>
+                                    <li class="item-content item-input">
+                                        <div class="item-inner">
+                                            <!-- <div class="item-title item-label">From</div> -->
+                                            <div class="item-input-wrap">
+                                                <input id="autocomplete-dropdown-expand-from" type="text"
+                                                    placeholder="From" value='{{fromValue}}'>
+                                                <span class="input-clear-button"></span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="item-content item-input">
+                                        <div class="item-inner">
+                                            <!-- <div class="item-title item-label">To</div> -->
+                                            <div class="item-input-wrap">
+                                                <input id="autocomplete-dropdown-expand-to" type="text" placeholder="To"
+                                                    value='{{toValue}}'>
+                                                <span class="input-clear-button"></span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
-                            <div class="chip-label">Home</div>
                         </div>
-                        <div class="chip">
-                            <div class="chip-media bg-color-black">
-                                <i class="icon f7-icons if-not-md">compass</i>
-                                <i class="icon material-icons md-only">work</i>
-                            </div>
-                            <div class="chip-label">Work</div>
+                        <div class="col-planner-searchbox-after">
+                            <a href="#" @click="switchFromTo">
+                                <i class="icon f7-icons if-not-md">arrow_up_arrow_down</i>
+                                <i class="icon material-icons md-only">import_export</i>
+                            </a>
                         </div>
                     </div>
                 </div>
 
             </div>
-
             <!-- searchbox from to end -->
 
             <!-- Scrollable page content-->
@@ -110,7 +81,7 @@
                             </div>
                             <div class="row">
                                 <div class="col" style="width:20%; ">{{departureTime}}</div>
-                                <div class="col" style="width:80%; ">{{journey_from_station}}</div>
+                                <div class="col" style="width:80%; ">{{@root.fromValue}}</div>
                             </div>
                             <div class="row">
                                 <div class="col" style="width:20%; "></div>
@@ -124,11 +95,11 @@
                             </div>
                             <div class="row">
                                 <div class="col" style="width:20%; ">{{arrivalTime}}</div>
-                                <div class="col" style="width:80%; ">{{journey_to_station}}</div>
+                                <div class="col" style="width:80%; ">{{@root.toValue}}</div>
                             </div>
                         </div>
                         <div class="col demo-col-center-content" style="width: 20%; min-width: 50px">
-                            {{duration}} <br>SEK 80
+                            <b>{{duration}}</b>
                         </div>
                     </div>
                 </div>
@@ -136,6 +107,31 @@
             <!-- </a> -->
             {{/each}}
         </div>
+
+        <div id="planner-time-picker" class="planner-time-picker planner-time-picker-hide">
+            <div class="planner-time-picker-header">
+                <a href="#" {{#js_if 'this.tempDepartureTiming == "departure_after"'}}
+                    class="planner-time-picker-dep-arr planner-time-picker-dep-arr-active" {{else}}
+                    class="planner-time-picker-dep-arr" {{/js_if}} @click="departureAfter">Departure after</a>
+                <a href="#" {{#js_if 'this.tempDepartureTiming == "arrival_before"'}}
+                    class="planner-time-picker-dep-arr planner-time-picker-dep-arr-active" {{else}}
+                    class="planner-time-picker-dep-arr" {{/js_if}} @click="arrivalBefore">Arrival before</a>
+            </div>
+            <div class="planner-time-picker-container">
+                <div id="planner-time-picker-container"></div>
+                <div class="planner-time-picker-date">
+                    <a href="#" @click="dateDec"> <i class="icon icon-prev"></i> </a>
+                    <div @click="showDatePicker">
+                        {{formatCalendarDate tempDepartureDateTime}}
+                    </div>
+                    <a href="#" @click="dateInc"> <i class="icon icon-next"></i> </a>
+                </div>
+            </div>
+            <div class="planner-time-picker-footer">
+                <a class="button" href="#" @click="closeAndSaveTimePicker">DONE</a>
+            </div>
+        </div>
+        <div id="planner-time-picker-date-input"></div>
     </div>
 </template>
 
@@ -152,13 +148,125 @@
                 hasMoreItems: true,
                 fromSet: false,
                 fromPlace: null,
+                fromValue: '',
                 toSet: false,
                 toPlace: null,
+                toValue: '',
                 journeys: [],
+
+                // date and time for display
+                departureDateTime: null,
+
+                // used for manipulation in date and time pickers
+                tempDepartureDateTime: null,
+
+                departureTiming: "departure_after", //  departure_after, arrival_before
+                tempDepartureTiming: "departure_after" //  departure_after, arrival_before
             }
         },
         methods: {
-            getMaterialSectionIcon: function(type, mode) {
+            departureAfter: function () {
+                this.$setState({
+                    tempDepartureTiming: "departure_after"
+                });
+            },
+            arrivalBefore: function () {
+                this.$setState({
+                    tempDepartureTiming: "arrival_before"
+                });
+            },
+            showDatePicker: function () {
+                this.calendarModal.setValue([this.tempDepartureDateTime.toDate()]);
+                this.calendarModal.open();
+            },
+            dateDec: function () {
+                this.tempDepartureDateTime.subtract(1, 'd');
+                this.$update();
+            },
+            dateInc: function () {
+                this.tempDepartureDateTime.add(1, 'd');
+                this.$update();
+            },
+            toggleTimePicker: function () {
+                var el = this.$$("#planner-time-picker");
+                const open = !el.hasClass('planner-time-picker-hide');
+
+                if (open) {
+                    this.closeTimePicker();
+                } else {
+                    this.openTimePicker();
+                }
+            },
+            openTimePicker: function () {
+                var el = this.$$("#planner-time-picker");
+                const open = !el.hasClass('planner-time-picker-hide');
+
+                if (!open) {
+                    console.log("toggleTimePicker() open");
+
+                    this.$setState({
+                        tempDepartureDateTime: moment(this.departureDateTime),
+                        tempDepartureTiming: this.departureTiming
+                    });
+
+                    el.removeClass('planner-time-picker-hide');
+                }
+            },
+            closeTimePicker: function () {
+                var el = this.$$("#planner-time-picker");
+                const open = !el.hasClass('planner-time-picker-hide');
+
+                if (open) {
+                    console.log("toggleTimePicker() close");
+                    el.addClass('planner-time-picker-hide');
+                }
+            },
+            closeAndSaveTimePicker: function () {
+                this.departureDateTime = this.tempDepartureDateTime;
+                this.departureTiming = this.tempDepartureTiming;
+                this.$update();
+                this.closeTimePicker();
+                this.updateJourneys();
+            },
+            switchFromTo: function () {
+                var self = this;
+                var set = self.toSet,
+                    place = self.toPlace;
+
+
+                self.toSet = self.fromSet;
+                self.toPlace = self.fromPlace;
+                self.setToName();
+
+                self.fromSet = set;
+                self.fromPlace = place;
+                self.setFromName();
+
+                self.updateJourneys();
+            },
+            getValue: function (journey) {
+                if (!journey) {
+                    return '';
+                }
+                if (journey.type == "stop_area") {
+                    return journey.place.name;
+                } else if (journey.type == "current_position") {
+                    return 'My position';
+                }
+            },
+            setToName: function () {
+                var self = this;
+                self.$setState({
+                    toValue: self.getValue(this.toPlace)
+                });
+            },
+            setFromName: function () {
+                var self = this;
+                self.$setState({
+                    fromValue: self.getValue(this.fromPlace)
+                });
+            },
+            getMaterialSectionIcon: function (type, mode) {
                 Ux.getMaterialSectionIcon(type, mode);
             },
             openJourney: function (id) {
@@ -166,7 +274,9 @@
                 var app = self.$app;
 
                 //   console.log("open journey", this.journeys[id]);
-                this.$root.$setState({ selectedJourney: this.journeys[id] });
+                this.$root.$setState({
+                    selectedJourney: this.journeys[id]
+                });
                 //self.$root.Store.journey = this.journeys[id];
 
                 app.views.main.router.navigate({
@@ -180,20 +290,115 @@
 
                 var self = this;
 
-                if(!self.toSet || !self.fromSet) return;
+                if (!self.toSet || !self.fromSet) return;
 
-                console.log("update Journey");
-                Journeys.getJourneyBetweenStops(this.fromPlace, this.toPlace, 10, function(data) {
-                    console.log(data);
-                    self.$setState({journeys: data});
+                console.log("update Journeys()");
+
+                Journeys.getJourneyBetweenStops(
+                    this.fromPlace, this.toPlace,
+                    this.departureDateTime,
+                    this.departureTiming,
+                    10,
+                    function (data) {
+                        self.$setState({
+                            journeys: data
+                        });
+                    });
+            },
+            createDateTimePicker: function () {
+
+                var self = this;
+                var app = self.$app;
+
+                var today = new Date();
+
+                if (self.calendarModal && self.pickerInline) return;
+
+                self.pickerInline = app.picker.create({
+                    containerEl: '#planner-time-picker-container',
+                    inputEl: '#demo-picker-date',
+                    toolbar: false,
+                    rotateEffect: false,
+                    value: [
+                        today.getHours(),
+                        today.getMinutes() < 10 ? '0' + today.getMinutes() : today.getMinutes()
+                    ],
+                    formatValue: function (values, displayValues) {
+                        return displayValues[0] + ' ' + values[1] + ', ' + values[2] + ' ' + values[3] +
+                            ':' + values[4];
+                    },
+                    cols: [
+                        // Hours
+                        {
+                            values: (function () {
+                                var arr = [];
+                                for (var i = 0; i <= 23; i++) {
+                                    arr.push(i);
+                                }
+                                return arr;
+                            })(),
+                        },
+                        // Divider
+                        {
+                            divider: true,
+                            content: ':'
+                        },
+                        // Minutes
+                        {
+                            values: (function () {
+                                var arr = [];
+                                for (var i = 0; i <= 59; i++) {
+                                    arr.push(i < 10 ? '0' + i : i);
+                                }
+                                return arr;
+                            })(),
+                        }
+                    ],
+                    on: {
+                        change: function (picker, values, displayValues) {
+                            if (self.tempDepartureDateTime) {
+                                self.tempDepartureDateTime.hour(displayValues[0]);
+                                self.tempDepartureDateTime.minute(displayValues[1]);
+                                self.$update();
+                            }
+                        },
+                    }
                 });
+
+                var calendarModal = app.calendar.create({
+                    inputEl: '#planner-time-picker-date-input',
+                    openIn: 'customModal',
+                    header: true,
+                    footer: true,
+                    on: {
+                        change: function (calendar, value) {
+                            if ((value.length > 0) && self.tempDepartureDateTime) {
+
+                                //console.log("change date to ", value[0].getFullYear(), value[0].getMonth(), value[0].getDate());
+
+                                self.tempDepartureDateTime.month(value[0].getMonth());
+                                self.tempDepartureDateTime.year(value[0].getFullYear());
+                                self.tempDepartureDateTime.date(value[0].getDate());
+                                self.$update();
+                                // console.log("change date to ", value[0], self.tempDepartureDateTime);
+                            }
+                        },
+                    }
+                });
+                self.calendarModal = calendarModal;
+                self.$setState({
+                    departureDateTime: moment()
+                });
+
             },
         },
         on: {
             pageInit: function () {
                 var self = this;
                 var app = self.$app;
-            
+
+
+
                 var acTempl = {
                     inputEl: '#autocomplete-dropdown-expand-from',
                     openIn: 'dropdown',
@@ -203,7 +408,7 @@
                     textProperty: 'name', //object's "text" property name
                     limit: 20, //limit to 20 results
                     typeahead: true,
-                    dropdownPlaceholderText: 'From',
+                    dropdownPlaceholderText: '',
 
                     // overloading renderItem in order to add icons for place, stoparea, ...
                     renderItem: function (item, index) {
@@ -250,7 +455,7 @@
                         }
                         // Show Preloader
                         autocomplete.preloaderShow();
-                        Journeys.getPlaces(query, 10, function(places) {
+                        Journeys.getPlaces(query, 10, function (places) {
                             //console.log();
                             render(places);
                             // Hide Preoloader
@@ -261,59 +466,56 @@
                         change: function (value) {
                             //console.log("ON CHANGE FROM", value[0]);
                             //console.log("ON CHANGE FROM", self.$root.toJourney);
-                            self.fromSet= true;
-                            self.fromPlace= {
-                                    place: value[0].stop_area,
-                                    type: "stop_area"
-                                };
+                            self.fromSet = true;
+                            self.fromPlace = {
+                                place: value[0].stop_area,
+                                type: "stop_area"
+                            };
+                            self.setFromName();
 
                             // will call render function 
-                            self.updateJourneys(); 
+                            self.updateJourneys();
                         }
                     }
                 };
                 var acFrom = app.autocomplete.create(acTempl);
                 acTempl.inputEl = '#autocomplete-dropdown-expand-to';
-                acTempl.dropdownPlaceholderText = 'To';
+                acTempl.dropdownPlaceholderText = '';
                 acTempl.on = {
                     change: function (value) {
-                            self.toSet= true;
-                            self.toPlace= {
-                                    place: value[0].stop_area,
-                                    type: "stop_area"
-                                };
+                        self.toSet = true;
+                        self.toPlace = {
+                            place: value[0].stop_area,
+                            type: "stop_area"
+                        };
+                        self.setToName();
                         self.updateJourneys();
                     }
                 };
 
-                if(self.$root.toJourney) {
-                    console.log("PAGE INIT HOME", self.$root.toJourney);
-                    self.toSet= true;
-                    self.toPlace= self.$root.toJourney;
-
-                    //TODO: rendering of value with template
-                    if(self.$root.toJourney.type == "stop_area") {
-                        self.$$('#autocomplete-dropdown-expand-to').val(self.$root.toJourney.place.name);
-                    }
+                if (self.$root.toJourney) {
+                    //console.log("PAGE INIT HOME", self.$root.toJourney);
+                    self.toSet = true;
+                    self.toPlace = self.$root.toJourney;
+                    self.setToName();
                 }
 
-                if(!self.$root.fromJourney) {
-                    Utils.getPosition(function(place) {
+                if (!self.$root.fromJourney) {
+                    Utils.getPosition(function (place) {
                         console.log("My position", place);
-                        self.fromSet= true;
-                        self.fromPlace= place;
-                        self.$$('#autocomplete-dropdown-expand-from').val("My position");
-                            //console.log(self.$$('#autocomplete-dropdown-expand-to').attributes); //("data-value", "My position");
-                        
-                        if(self.toSet) {
+                        self.fromSet = true;
+                        self.fromPlace = place;
+
+                        self.setFromName();
+
+                        if (self.toSet) {
                             self.updateJourneys();
                         }
                     });
                 }
-
-                
-
                 var acTo = app.autocomplete.create(acTempl);
+
+                this.createDateTimePicker();
                 /*
                 self.$setState({
                     fromPlace: {

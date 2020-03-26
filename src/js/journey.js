@@ -4,14 +4,16 @@ import Framework7 from 'framework7/framework7.esm.bundle.js';
 
 var Journeys = {
     apiVersion: "v1",
+
     port: 9191,
     baseUrl: "http://localhost",
     instance: "default",
+
     /*
     port: null,
     baseUrl: "https://api.navitia.io",
     instance: "de",
-    username: "",
+    username: "e6e490c4-3df7-43bd-9bef-d8b68898b29b",
     */
 
     // assemble the URL
@@ -36,14 +38,15 @@ var Journeys = {
         return d;
     },
     getParamByPlaceType: function(place) {
+        console.log("getParamByPlaceType", place);
         if(place.type == "stop_area") {
             return place.place.id;
         } else if (place.type == "current_position" ) {
-            //return place.place.longitude + ";" + place.place.latitude;
+            //return place.place.coords.lon + ";" + place.place.coords.lat;
             return "17.634303;59.94171";
         }
     },
-    getJourneyBetweenStops: function (fromPlace, toPlace, maxCount, callback) {
+    getJourneyBetweenStops: function (fromPlace, toPlace, dateTime, dateTimeMode, maxCount, callback) {
 
         var from = [59.941710, 17.604303];
         var to = [59.725600, 17.787895];
@@ -54,8 +57,26 @@ var Journeys = {
 
         var journeyUrl = this.getUrl() + "/journeys?" +
             "from=" + self.getParamByPlaceType(fromPlace) +
-            "&to=" + self.getParamByPlaceType(toPlace) +
-            "&count=" + maxCount;
+            "&to=" + self.getParamByPlaceType(toPlace);
+
+        if(dateTime) {
+            journeyUrl += "&datetime=" + dateTime.format("YYYYMMDDThhmmss");
+        }
+
+        if(dateTimeMode == "departure_after") {
+            journeyUrl += "&datetime_represents=departure";
+        } else if(dateTimeMode == "arrival_before") {
+            journeyUrl += "&datetime_represents=arrival";
+        }
+
+        if(maxCount) {
+            journeyUrl += "&count=" + maxCount;
+        }
+
+            /* 
+            datetime = date times as local times of the coverage via an ISO 8601 “YYYYMMDDThhmmss” string
+            datetime_represents = departure, arrival
+            */
 
         console.log("UPDATE JOURNEY", journeyUrl);
         Framework7.request({

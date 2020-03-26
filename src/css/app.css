@@ -207,3 +207,104 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none;  /* IE 10+ */
   }
+
+
+  .row-planner-searchbox {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .col-planner-searchbox-main, 
+  .col-planner-searchbox-after {
+    text-align: left;
+  }
+
+  .col-planner-searchbox-main {
+    min-width: 240px;
+    width: 90%;
+  }
+
+  .col-planner-searchbox-after {
+    width: 24px;
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;    
+  }
+
+  .planner-time-picker {
+    position: absolute; 
+    display: block;
+    padding: 0 0 0 0;
+    z-index: 1000;
+
+    background: var(--f7-calendar-sheet-bg-color);
+
+    top: 50%;
+    left: 50%;
+    min-width: 300px;
+    max-width: var(--f7-calendar-modal-max-width);
+    transform: translate3d(-50%, -50%, 0);
+
+    transition-property: transform;
+
+    border-radius: var(--f7-calendar-modal-border-radius);
+    box-shadow: var(--f7-elevation-24);    
+  }
+
+  .planner-time-picker-header {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    padding: var(--f7-calendar-header-padding);
+    background-color: var(--f7-calendar-header-bg-color, var(--f7-bars-bg-color));
+    color: var(--f7-calendar-header-text-color, var(--f7-bars-text-color));
+    height: var(--f7-calendar-header-height);
+    line-height: var(--f7-calendar-header-height);
+    font-size: var(--f7-toolbar-font-size);
+
+    display: flex;
+    justify-content: space-evenly;
+  }
+
+  .planner-time-picker-footer {
+    width: 100%;
+    flex-shrink: 0;
+    padding: var(--f7-calendar-footer-padding);
+    background-color: var(--f7-calendar-footer-bg-color, var(--f7-bars-bg-color));
+    color: var(--f7-calendar-footer-text-color, var(--f7-bars-text-color));
+    height: var(--f7-calendar-footer-height);
+    font-size: var(--f7-toolbar-font-size);
+    display: flex;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    align-items: center;
+    position: relative;
+}
+
+  .planner-time-picker-container {
+    padding: var(--f7-calendar-header-padding);
+  }
+
+  .planner-time-picker-date {
+    display: flex; 
+    justify-content: space-between;
+    font-size: var(--f7-calendar-day-font-size);
+  }
+
+  .planner-time-picker-hide {
+      transform: translate3d(-50%, 100vh, 0);    
+      transition-duration: 400ms;
+  }
+
+  .planner-time-picker-dep-arr {
+    margin-right: 8px; 
+    margin-left: 8px;
+  }
+
+  .planner-time-picker-dep-arr-active {
+    border-bottom: 2px solid; 
+  }
