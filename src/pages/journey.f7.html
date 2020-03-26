@@ -40,8 +40,10 @@
                                 &nbsp;
                             </div>
                             <div class="col-journey-main-mid">
-                                {{journeySectionChip this}}
-                                ({{duration}} min)
+                                <div style="padding-left: 24px;">
+                                    {{journeySectionChip this}}
+                                    ({{duration}} min)
+                                </div>
                             </div>
                         </div>
                         <div class="row-journey">
@@ -130,7 +132,7 @@
                         sections = self.journey.sections;
 
                     for (var s = 0; s < sections.length; s++) {
-                        //console.log(sections[s].geojson);
+                        //console.log("GEOJSON", sections[s].geojson);
                         var sec = sections[s];
                         if (sec.geojson) {
                             self.tripLayer.addData(sec.geojson);

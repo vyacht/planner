@@ -158,7 +158,7 @@
 
   .row-journey {
     display: flex;
-    justify-content: start-flex;
+    justify-content: flex-start;
   }
 
   .col-journey-main, 
@@ -170,7 +170,6 @@
 
   .col-journey-main-mid {
     padding: var(--journey-transport-chip-padding);
-    padding-left: calc(var(--journey-transport-chip-padding) + 24px);
 
     /* margin left = .5 x line-thinkness */
     border-left: 4px solid var(--journey-graphics-color);
