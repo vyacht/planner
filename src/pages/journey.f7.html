@@ -87,9 +87,9 @@
                 self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
                     zoomControl: false
                 }).setView([59.8, 17.6], 10);
-                var topoUrl = 'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+                var topoUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
                 var topoAttribution =
-                    'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
+                    'Kartendaten: <a href="https://openstreetmap.org">OpenStreetMap</a>, <a href="https://viewfinderpanoramas.org">SRTM</a> | Kartendarstellung: <a href="https://opentopomap.org">OpenTopoMap</a>, &copy; <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>';
 
                     self.mymap.on('click', function (ev) {
                         self.offsetHeight = 151;
