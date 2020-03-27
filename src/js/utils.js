@@ -1,12 +1,31 @@
 var Utils = {
-    getPosition: function (callback) {
+    geolocationPermission: function() {
+        if(navigator.permissions) {
+            // Permission API is implemented
+            navigator.permissions.query({
+                    name: 'geolocation'
+                }).then(permission =>
+                    // is geolocation granted?
+                    permission.state === "granted"
+                    ? console.log("Permission on geolocation granted")
+                    : console.warn("Permission on geolocation NOT granted")
+            ); 
+        } else {
+            // Permission API was not implemented
+            console.warn("Permission API is not supported");
+        }
+  
+    },
+    getPosition: function (cbSuccess, cbError) {
+
+        this.geolocationPermission();
 
         // onSuccess Callback
         // This method accepts a Position object, which contains the
         // current GPS coordinates
         //
         var onSuccess = function (position) {
-            callback({
+            cbSuccess({
                 type: "current_position",
                 place: {
                     coords: {
@@ -20,8 +39,7 @@ var Utils = {
         // onError Callback receives a PositionError object
         //
         function onError(error) {
-            alert('code: ' + error.code + '\n' +
-                'message: ' + error.message + '\n');
+            if(cbError) cbError(error);
         }
 
         navigator.geolocation.getCurrentPosition(onSuccess, onError);
