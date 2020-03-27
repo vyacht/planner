@@ -128,6 +128,12 @@ var cordovaApp = {
       }
     }, true);
   },
+  handleGelocation: function() {
+    var onDeviceReady = function() {
+        console.log("navigator.geolocation works well");
+    };
+    document.addEventListener("deviceready", onDeviceReady, false);
+  },
   init: function (f7) {
     // Save f7 instance
     cordovaApp.f7 = f7;
@@ -140,6 +146,8 @@ var cordovaApp = {
 
     // Handle Keyboard
     cordovaApp.handleKeyboard();
+
+    cordovaApp.handleGelocation();
   },
 };
 
