@@ -53,14 +53,15 @@ var Journeys = {
 
         var self = this;
 
-        //console.log("UPDATE JOURNEY", fromPlace, toPlace);
+        /* console.log("UPDATE JOURNEY", fromPlace, toPlace, 
+            dateTime, dateTime.format("YYYYMMDDTHHmmss")); */
 
         var journeyUrl = this.getUrl() + "/journeys?" +
             "from=" + self.getParamByPlaceType(fromPlace) +
             "&to=" + self.getParamByPlaceType(toPlace);
 
         if(dateTime) {
-            journeyUrl += "&datetime=" + dateTime.format("YYYYMMDDThhmmss");
+            journeyUrl += "&datetime=" + dateTime.format("YYYYMMDDTHHmmss");
         }
 
         if(dateTimeMode == "departure_after") {
@@ -73,12 +74,11 @@ var Journeys = {
             journeyUrl += "&count=" + maxCount;
         }
 
-            /* 
+        /* 
             datetime = date times as local times of the coverage via an ISO 8601 “YYYYMMDDThhmmss” string
             datetime_represents = departure, arrival
-            */
-
-        console.log("UPDATE JOURNEY", journeyUrl);
+        */
+        //console.log("UPDATE JOURNEY", journeyUrl);
         Framework7.request({
             url: journeyUrl,
             method: 'GET',
@@ -114,14 +114,11 @@ var Journeys = {
 
                         // there are weird sections from station to itself (waiting time?)
                         if (ss.duration == 0) continue;
-                        var at = moment(ss.arrival_date_time, "YYYYMMDDThhmmss");
-                        var dt = moment(ss.departure_date_time, "YYYYMMDDThhmmss");
-
+                        var at = moment(ss.arrival_date_time, "YYYYMMDDTHHmmss");
+                        var dt = moment(ss.departure_date_time, "YYYYMMDDTHHmmss");
 
                         var label = '';
                         if ('display_informations' in ss) {
-                            //console.log("MISSING: ", ss);
-
                             label = ss.display_informations.name;
                             if (!label) {
                                 label = ss.display_informations.label;
