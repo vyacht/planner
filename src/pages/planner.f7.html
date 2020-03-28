@@ -37,14 +37,14 @@
                                             <div class="item-input-wrap">
                                                 <input id="autocomplete-dropdown-expand-from" type="text"
                                                     placeholder="From" value='{{fromValue}}'
-                                                    @keyup='onKeyUp' @mousedown='onMouseDown'>
+                                                    @keyup='onKeyUp("from")' @mousedown='onMouseDown("from")'>
                                             </div>
                                         </div>
                                         <div class="item-after">
                                             <div class="menu" style="align-items: right;">
                                                 <div class="menu-inner">
                                                     {{#js_if 'this.typingStarted'}}
-                                                    <a class="menu-item" @Click='onclearSearchBox()'>
+                                                    <a class="menu-item" @Click='onclearSearchBox("from")'>
                                                         <div class="menu-item-content icon-only"
                                                             style="background: white; color: var(--f7-input-clear-button-color);">
                                                             <i class="icon material-icons">cancel</i>
@@ -59,8 +59,23 @@
                                         <div class="item-inner">
                                             <!-- <div class="item-title item-label">To</div> -->
                                             <div class="item-input-wrap">
-                                                <input id="autocomplete-dropdown-expand-to" type="text" placeholder="To"
-                                                    value='{{toValue}}'>
+                                                <input id="autocomplete-dropdown-expand-to" type="text" 
+                                                    placeholder="To" value='{{toValue}}'
+                                                    @keyup='onKeyUp("to")' @mousedown='onMouseDown("to")'>
+                                            </div>
+                                        </div>
+                                        <div class="item-after">
+                                            <div class="menu" style="align-items: right;">
+                                                <div class="menu-inner">
+                                                    {{#js_if 'this.typingStarted'}}
+                                                    <a class="menu-item" @Click='onclearSearchBox("to")'>
+                                                        <div class="menu-item-content icon-only"
+                                                            style="background: white; color: var(--f7-input-clear-button-color);">
+                                                            <i class="icon material-icons">cancel</i>
+                                                        </div>
+                                                    </a>
+                                                    {{/js_if}}
+                                                </div>
                                             </div>
                                         </div>
     
@@ -183,41 +198,70 @@
             }
         },
         methods: {
-            resetPlace: function() {
-                this.fromSet = false;
-                this.fromPlace = null; 
+            resetPlace: function(fromOrTo) {
+                if(fromOrTo == "from") {
+                    this.fromSet = false;
+                    this.fromPlace = null; 
+                } else if(fromOrTo == "to") {
+                    this.toSet = false;
+                    this.toPlace = null; 
+                }
+
                 this.typingStarted = false;
 
                 // rendering here
                 this.updateJourneys();
             },
             /* records any key press in input box */
-            onKeyUp: function () {
+            onKeyUp: function (fromOrTo) {
                 console.log("onKeyUp()");
-                var inputText = this.$$('#autocomplete-dropdown-expand-from').val();
-                if (!inputText || inputText.length == 0) {
-                    this.resetPlace();
+                var inputText; 
+
+                if(fromOrTo == "from") {
+                    inputText= this.$$('#autocomplete-dropdown-expand-from').val();
+                } else if(fromOrTo == "to") {
+                    inputText= this.$$('#autocomplete-dropdown-expand-to').val();
                 }
-                else
+
+                if (!inputText || inputText.length == 0) {
+                    this.resetPlace(fromOrTo);
+                }
+                else {
                     this.$setState({
                         typingStarted: true
                     });
-            },
-            /* when mouse down then we clear input if its own position */
-            onMouseDown: function() {
-                console.log("onMouseDown()");
-                if(this.fromSet && (this.fromPlace.type == "current_position")) {
-                    this.onclearSearchBox();        
                 }
             },
-            /* button to input box has been hit */
-            onclearSearchBox: function () {
-                console.log("onClearSearchBox()");
-                const $inputEl = this.$$('#autocomplete-dropdown-expand-from');
+            /* when mouse down then we clear input if its own position */
+            onMouseDown: function(fromOrTo) {
+                console.log("onMouseDown()");
 
+                if(fromOrTo == "from") {
+                    if((!this.fromSet) || (!this.fromPlace)) return; 
+                    if(this.fromPlace.type == "current_position") {
+                        this.onclearSearchBox(fromOrTo);        
+                    }
+                } else if(fromOrTo == "to") {
+                    if((!this.toSet) || (!this.toPlace)) return; 
+                    if(this.toPlace.type == "current_position") {
+                        this.onclearSearchBox(fromOrTo);        
+                    }
+                }
+                
+            },
+            /* button to input box has been hit */
+            onclearSearchBox: function (fromOrTo) {
+                console.log("onClearSearchBox()");
+                var $inputEl;
+                if(fromOrTo == "from") {
+                    $inputEl = this.$$('#autocomplete-dropdown-expand-from');
+                } else if(fromOrTo == "to") {
+                    $inputEl = this.$$('#autocomplete-dropdown-expand-to');
+                }
+                 
                 // we could be triggering change events but do handle change ourselves
                 $inputEl.val('').focus();
-                this.resetPlace();
+                this.resetPlace(fromOrTo);
             },
             departureAfter: function () {
                 this.$setState({
@@ -298,6 +342,7 @@
 
                 self.updateJourneys();
             },
+            /* get display name to be shown for place */
             getValue: function (journey) {
                 if (!journey) {
                     return '';
@@ -314,11 +359,25 @@
                     toValue: self.getValue(this.toPlace)
                 });
             },
+            /* set display name of departure station 
+               used for journey details */
             setFromName: function () {
                 var self = this;
+                console.log("set from name: ", this.fromPlace);
                 self.$setState({
                     fromValue: self.getValue(this.fromPlace)
                 });
+            },
+            setPlace: function(place, fromOrTo) {
+                if(fromOrTo == "from") {
+                    this.fromSet = true;
+                    this.fromPlace = place;
+                    this.setFromName();
+                } else if(fromOrTo == "to") {
+                    this.toSet = true;
+                    this.toPlace = place;
+                    this.setToName();
+                } 
             },
             getMaterialSectionIcon: function (type, mode) {
                 Ux.getMaterialSectionIcon(type, mode);
@@ -343,6 +402,8 @@
             updateJourneys: function () {
 
                 var self = this;
+
+                console.log("update Journeys()", self.fromPlace, self.toPlace);
 
                 if (!self.toSet || !self.fromSet) {
                     self.$setState({
@@ -456,8 +517,6 @@
                 var self = this;
                 var app = self.$app;
 
-
-
                 var acTempl = {
                     inputEl: '#autocomplete-dropdown-expand-from',
                     openIn: 'dropdown',
@@ -465,9 +524,12 @@
                     /* If we set valueProperty to "id" then input value on select will be set according to this property */
                     valueProperty: 'name', //object's "value" property name
                     textProperty: 'name', //object's "text" property name
+                    typeProperty: 'embedded_type',
                     limit: 20, //limit to 20 results
                     typeahead: true,
                     dropdownPlaceholderText: '',
+
+                    fromOrTo: 'from',  // this indicates if we are the 'from' or the 'to' field
 
                     // overloading renderItem in order to add icons for place, stoparea, ...
                     renderItem: function (item, index) {
@@ -480,23 +542,29 @@
                         if (item.placeholder) {
                             // Dropwdown placeholder
                             itemHtml = `
-                                <li class="autocomplete-dropdown-placeholder">
+                                <li class="item-radio item-content">
                                 <label class="item-content">
                                     <div class="item-inner">
-                                    <div class="item-title">${item.text}</div>
+                                        <div style="display: flex;">
+                                        <i class="icon f7-icons if-not-md">plus_circle</i>
+                                        <i class="icon material-icons md-only">gps_fixed</i>
+                                        <div class="item-title">${item.text}</div>
+                                    </div>
                                     </div>
                                 </label>
                                 </li>
                             `;
                             return itemHtml.trim();
                         }
+                        //  console.log('RENDER', item);
+                        var icon = Ux.getMaterialPlaceTypeIcon(item.type);
                         itemHtml = `
                             <li>
                             <label class="item-radio item-content" data-value="${itemValue}">
                                 <div class="item-inner">
                                     <div style="display: flex;">
                                         <i class="icon f7-icons if-not-md">plus_circle</i>
-                                        <i class="icon material-icons md-only">directions_bus</i>
+                                        <i class="icon material-icons md-only">${icon}</i>
                                         <div class="item-title">${item.text}</div>
                                     </div>
                                 </div>
@@ -508,14 +576,21 @@
                     source: function (query, render) {
                         var autocomplete = this;
                         var results = [];
+
                         if((query == '') || (query.length == 0) || (query == MY_POSITION_TXT)) {
+                            results = [{
+                                    id: MY_POSITION_TXT,
+                                    name: MY_POSITION_TXT,
+                                    embedded_type: 'current_position'
+                                }
+                            ];
                             render(results);
                             return;
                         }
                         // Show Preloader
                         autocomplete.preloaderShow();
                         Journeys.getPlaces(query, 10, function (places) {
-                            //console.log();
+                            //console.log("PLACES", places);
                             render(places);
                             // Hide Preoloader
                             autocomplete.preloaderHide();
@@ -523,34 +598,52 @@
                     },
                     on: {
                         change: function (value) {
-                            console.log("ON CHANGE FROM", value[0]);
-                            //console.log("ON CHANGE FROM", self.$root.toJourney);
-                            self.fromSet = true;
-                            self.fromPlace = {
-                                place: value[0].stop_area,
-                                type: "stop_area"
-                            };
-                            self.setFromName();
 
-                            // will call render function 
-                            self.updateJourneys();
+                            var ac = this;
+
+                            if(!value && value.length == 0) return;
+                            
+                            if(value[0].embedded_type == 'current_position') {
+                                var onError = function(error) {
+                                    console.error("error fetching position: " + error.code);
+                                    self.geolocationNotification.open();
+                                    self.onclearSearchBox(ac.params.fromOrTo);
+                                };
+
+                                var onSuccess = function(data) {
+
+                                    var place = {
+                                        type: "current_position",
+                                        place: data.place
+                                    };
+                                    self.setPlace(place, ac.params.fromOrTo);
+
+                                    // will call render function 
+                                    self.updateJourneys();
+                                };
+
+                                Utils.getPosition(onSuccess, onError);
+
+                            } else if(value[0].embedded_type == 'stop_area') {
+                                var place = {
+                                    place: value[0].stop_area,
+                                    type: "stop_area"
+                                };
+                                self.setPlace(place, ac.params.fromOrTo);
+
+                                // will call render function 
+                                self.updateJourneys();
+                            }
                         }
                     }
                 };
+
                 var acFrom = app.autocomplete.create(acTempl);
                 acTempl.inputEl = '#autocomplete-dropdown-expand-to';
                 acTempl.dropdownPlaceholderText = '';
-                acTempl.on = {
-                    change: function (value) {
-                        self.toSet = true;
-                        self.toPlace = {
-                            place: value[0].stop_area,
-                            type: "stop_area"
-                        };
-                        self.setToName();
-                        self.updateJourneys();
-                    }
-                };
+                acTempl.place= self.toPlace;
+                acTempl.isSet= self.toSet;
+                acTempl.fromOrTo= "to";
 
                 if (self.$root.toJourney) {
                     //console.log("PAGE INIT HOME", self.$root.toJourney);
@@ -575,6 +668,22 @@
                 var acTo = app.autocomplete.create(acTempl);
 
                 this.createDateTimePicker();
+
+                // TODO: identical code to main.
+                self.geolocationNotification = app.notification.create({
+                    icon: '<i class="icon f7-icons">exclamationmark_circle</i>',
+                    title: "You have not granted permission.",
+                    titleRightText: '',
+                    subtitle: "Can't retrieve location.",
+                    text: 'vy planr has no permission to retrive the location.',
+                    closeOnClick: true,
+                    closeButton: 'OK',
+                    on: {
+                        close: function () {
+                        },
+                    },
+                });
+
                 /*
                 self.$setState({
                     fromPlace: {
