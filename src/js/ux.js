@@ -13,6 +13,20 @@ var Ux = {
         } else if (type == 'waiting') {
             return "hourglass_empty";
         }
+    },
+    getMaterialPlaceTypeIcon: function(type) {
+        if (type == 'stop_area') {
+            return "directions_train";
+        } else if (type == 'administrative_region') {
+            return "place";
+        } else if (type == 'poi') {
+            return "place";
+        } else if (type == 'address') {
+            return "business";
+        } else if (type == 'current_position') {
+            return "gps_fixed";
+        } else 
+            return 'help_outline';
     }
 };
 
