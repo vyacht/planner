@@ -1,4 +1,21 @@
 var Utils = {
+    geocodeReverse: function() {
+        // https://nominatim.openstreetmap.org/reverse?lat=59.492934&lon=17.987616&format=json
+    },
+    geocoder: function() {
+        // https://nominatim.openstreetmap.org/search?city=Sollentuna&country=Sweden&format=json
+        // https://nominatim.org/release-docs/latest/
+        /*
+            q=<query>
+
+            street=<housenumber> <streetname>
+            city=<city>
+            county=<county>
+            state=<state>
+            country=<country>
+            postalcode=<postalcode>
+        */
+    },
     geolocationPermission: function() {
         if(navigator.permissions) {
             // Permission API is implemented
