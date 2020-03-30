@@ -95,8 +95,17 @@
             </div>
             <!-- searchbox from to end -->
 
-            <!-- Scrollable page content-->
+            {{#js_if '!this.journeys'}}
+            {{#js_if 'this.journeysError'}}
+            <div class="card demo-card-header-pic">
+                <div class="card-content card-content-padding">
+                    <b>{{journeysError}}</b>
+                </div>
+            </div>
+            {{/js_if}}
+            {{else}}
             {{#each journeys}}
+            <!-- Scrollable page content-->
             <!-- <a data-reload-detail="true" href="/journey/journey/{{this.journey_from_station}}/" style="color: var(--f7-text-color)">
             -->
             <!-- comp the link color -->
@@ -135,6 +144,8 @@
             </div>
             <!-- </a> -->
             {{/each}}
+            {{/js_if}}
+
         </div>
 
         <div id="planner-time-picker" class="planner-time-picker planner-time-picker-hide">
@@ -185,6 +196,7 @@
                 toPlace: null,
                 toValue: '',
                 journeys: [],
+                journeyError: null,
                 typingStarted: false,
 
                 // date and time for display
@@ -214,7 +226,7 @@
             },
             /* records any key press in input box */
             onKeyUp: function (fromOrTo) {
-                console.log("onKeyUp()");
+                //console.log("onKeyUp()");
                 var inputText; 
 
                 if(fromOrTo == "from") {
@@ -351,6 +363,10 @@
                     return journey.place.name;
                 } else if (journey.type == "current_position") {
                     return MY_POSITION_TXT;
+                } else if (journey.type == "poi") {
+                    return journey.place.name;
+                } else if (journey.type == "administrative_region") {
+                    return journey.place.name;
                 }
             },
             setToName: function () {
@@ -403,27 +419,35 @@
 
                 var self = this;
 
-                console.log("update Journeys()", self.fromPlace, self.toPlace);
+                //console.log("update Journeys()", self.fromPlace, self.toPlace);
 
                 if (!self.toSet || !self.fromSet) {
-                    self.$setState({
-                        journeys: null
-                    });
+                    self.journeys= null;
+                    self.journeysError = null;
+                    self.$update();
                     return;
                 }
+                
+                var onError = function(errCode, errMsg) {
+                    console.log("update Journeys() failed with " + errMsg);
+                    self.$setState({
+                        journeysError: errMsg,
+                        journeys: null
+                    });
+                };
 
-                console.log("update Journeys()");
+                var onSuccess = function(data) {
+                    self.$setState({
+                        journeys: data,
+                        journeysError: null
+                    });
+                };
 
                 Journeys.getJourneyBetweenStops(
                     this.fromPlace, this.toPlace,
                     this.departureDateTime,
                     this.departureTiming,
-                    10,
-                    function (data) {
-                        self.$setState({
-                            journeys: data
-                        });
-                    });
+                    10, onSuccess, onError);
             },
             createDateTimePicker: function () {
 
@@ -559,17 +583,17 @@
                         //  console.log('RENDER', item);
                         var icon = Ux.getMaterialPlaceTypeIcon(item.type);
                         itemHtml = `
-                            <li>
+                        <li>
                             <label class="item-radio item-content" data-value="${itemValue}">
+                                <div class="item-media">
+                                    <i class="icon f7-icons if-not-md">plus_circle</i>
+                                    <i class="icon material-icons md-only">${icon}</i>
+                                </div>
                                 <div class="item-inner">
-                                    <div style="display: flex;">
-                                        <i class="icon f7-icons if-not-md">plus_circle</i>
-                                        <i class="icon material-icons md-only">${icon}</i>
                                         <div class="item-title">${item.text}</div>
-                                    </div>
                                 </div>
                             </label>
-                            </li>
+                        </li>
                         `;
                         return itemHtml.trim();
                     },
@@ -601,8 +625,10 @@
 
                             var ac = this;
 
+
                             if(!value && value.length == 0) return;
-                            
+                            console.log("change(" + ac.params.fromOrTo + ")", value[0]);
+
                             if(value[0].embedded_type == 'current_position') {
                                 var onError = function(error) {
                                     console.error("error fetching position: " + error.code);
@@ -623,17 +649,35 @@
                                 };
 
                                 Utils.getPosition(onSuccess, onError);
+                                return;
 
-                            } else if(value[0].embedded_type == 'stop_area') {
-                                var place = {
+                            } 
+                            var place = null;
+
+                            if(value[0].embedded_type == 'stop_area') {
+                                place = {
                                     place: value[0].stop_area,
                                     type: "stop_area"
                                 };
-                                self.setPlace(place, ac.params.fromOrTo);
-
-                                // will call render function 
-                                self.updateJourneys();
+                            } else if(value[0].embedded_type == 'poi') {
+                                place = {
+                                    place: value[0].poi,
+                                    type: "poi"
+                                };
+                            } else if(value[0].embedded_type == 'administrative_region') {
+                                place = {
+                                    place: value[0].administrative_region,
+                                    type: "poi"
+                                };
+                            } else {
+                                self.resetPlace(ac.params.fromOrTo);
+                                return;
                             }
+
+                            self.setPlace(place, ac.params.fromOrTo);
+                            // will call render function 
+                            self.updateJourneys();
+
                         }
                     }
                 };
@@ -645,25 +689,30 @@
                 acTempl.isSet= self.toSet;
                 acTempl.fromOrTo= "to";
 
+                var toIsCurrentPosition = false;
                 if (self.$root.toJourney) {
                     //console.log("PAGE INIT HOME", self.$root.toJourney);
                     self.toSet = true;
                     self.toPlace = self.$root.toJourney;
                     self.setToName();
+                    if(self.$root.toJourney.type == "current_position") 
+                        toIsCurrentPosition = true;
                 }
 
                 if (!self.$root.fromJourney) {
-                    Utils.getPosition(function (place) {
-                        //console.log(MY_POSITION_TXT, place);
-                        self.fromSet = true;
-                        self.fromPlace = place;
+                     if(!toIsCurrentPosition) {
+                        Utils.getPosition(function (place) {
+                            //console.log(MY_POSITION_TXT, place);
+                            self.fromSet = true;
+                            self.fromPlace = place;
 
-                        self.setFromName();
+                            self.setFromName();
 
-                        if (self.toSet) {
-                            self.updateJourneys();
-                        }
-                    });
+                            if (self.toSet) {
+                                self.updateJourneys();
+                            }
+                        });                        
+                    }
                 }
                 var acTo = app.autocomplete.create(acTempl);
 
