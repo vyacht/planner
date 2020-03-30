@@ -45,7 +45,7 @@ var Utils = {
             cbSuccess({
                 type: "current_position",
                 place: {
-                    coords: {
+                    coord: {
                         lat: position.coords.latitude,
                         lon: position.coords.longitude
                     }
