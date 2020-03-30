@@ -15,13 +15,6 @@ var Journeys = {
     baseUrl: "http://vyacht-api-01.westeurope.cloudapp.azure.com",
     instance: "default",
 
-    /*
-    port: null,
-    baseUrl: "https://api.navitia.io",
-    instance: "de",
-    username: "e6e490c4-3df7-43bd-9bef-d8b68898b29b",
-    */
-
     // assemble the URL
     getUrl: function() {
         var url = this.baseUrl;
