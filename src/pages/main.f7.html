@@ -146,7 +146,7 @@
     import Journeys from '../js/journey.js';
     import Utils from '../js/utils.js';
     var wellknown = require('../js/wellknown.js');
-
+    import Ux from '../js/ux.js';
     export default {
         data: function () {
             return {
@@ -334,7 +334,7 @@
                 console.log("PLACE: ", place)
 
                 // place can be anything
-                var pos = L.latLng(place.coords.lat, place.coords.lon);
+                var pos = L.latLng(place.coord.lat, place.coord.lon);
 
                 self.selectedPlace = {
                     type: type,
@@ -346,12 +346,25 @@
                 self.markerLayerGroup.clearLayers();
                 L.marker(pos).addTo(self.markerLayerGroup);
 
+                this.sheetSwipeToStep.close();
+
                 if (type == "stop_area") {
                     self.getLines(place);
-                    this.$root.$setState({
-                        toJourney: self.selectedPlace
+                } else {
+                    this.$setState({
+                        linesBus: null,
+                        linesTrain: null,
+                        linesFerry: null,
+                        departures: null,
+                        departuresByLine: null,
+                        lineFilter: null,
+                        filteredDepartures: null
                     });
                 }
+
+                this.$root.$setState({
+                    toJourney: self.selectedPlace
+                });
             },
             setPositionToCurrent: function () {
                 var self = this;
@@ -436,7 +449,7 @@
                         "px");
 
                     if (self.selectedPlace && open) {
-                        var coord = self.selectedPlace.place.coords;
+                        var coord = self.selectedPlace.place.coord;
                         var pos = L.latLng(coord.lat, coord.lon);
                         self.fitMapToPoint(pos, 500, offsetHeight);
                     }
@@ -460,6 +473,7 @@
                         /* If we set valueProperty to "id" then input value on select will be set according to this property */
                         valueProperty: 'name', //object's "value" property name
                         textProperty: 'name', //object's "text" property name
+                        typeProperty: 'embedded_type',
                         limit: 20, //limit to 20 results
                         typeahead: false,
                         dropdownPlaceholderText: '',
@@ -487,12 +501,13 @@
                             `;
                                 return itemHtml.trim();
                             }
+                            var icon = Ux.getMaterialPlaceTypeIcon(item.type);
                             itemHtml = `
                             <li>
                             <label class="item-radio item-content" data-value="${itemValue}">
                                 <div class="item-media">
                                     <i class="icon f7-icons if-not-md">plus_circle</i>
-                                        <i class="icon material-icons md-only">directions_bus</i>
+                                    <i class="icon material-icons md-only">${icon}</i>
                                 </div>
                                 <div class="item-inner">
                                         <div class="item-title">${item.text}</div>
@@ -520,13 +535,30 @@
                         },
                         on: {
                             change: function (value) {
-                                var sa = value[0].stop_area;
 
-                                self.updatePlace("stop_area", {
-                                    coords: sa.coord,
-                                    name: sa.name,
-                                    label: sa.label,
-                                    id: sa.id
+                                console.log(value);       
+                                
+                                if(!value || value.length == 0) return;
+                                var v = value[0];
+                                var place = null;
+                                var type = '';
+                                if(v.embedded_type == "stop_area") {
+                                    place = value[0].stop_area;
+                                    type = 'stop_area';
+                                } else if(v.embedded_type == "poi") {
+                                    place = value[0].poi;
+                                    type = 'poi';
+                                } else if(v.embedded_type == "administrative_region") {
+                                    place = value[0].administrative_region;
+                                    type = 'administrative_region';
+                                } else {
+                                    return;
+                                }
+                                self.updatePlace(type, {
+                                    coord: place.coord,
+                                    name: place.name,
+                                    label: place.label,
+                                    id: place.id
                                 });
                             }
                         }
