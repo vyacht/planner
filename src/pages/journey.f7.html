@@ -141,17 +141,53 @@
                     }
                     self.tripLayer.setStyle(lineStyle);
 
+                    var isFirst = true, isLast=false;
+
                     for (var s = 0; s < sections.length; s++) {
                         //console.log(sections[s].geojson);
+                        if(s == sections.length - 1) {
+                            isLast = true;
+                        }
+                        var toPos = {lat: null, lon: null};
+                        var fromPos = {lat: null, lon: null};
                         var sec = sections[s];
-                        if (sec.departurePosition)
-                            L.circleMarker(sec.departurePosition, {
-                                radius: 5
-                            }).addTo(self.markerLayerGroup);
-                        if (sec.departurePosition)
-                            L.circleMarker(sec.arrivalPosition, {
-                                radius: 5
-                            }).addTo(self.markerLayerGroup);
+                        var c = null;
+
+                        if(sec.geojson && sec.geojson.coordinates) {
+                             c = sec.geojson.coordinates;
+                        }
+
+                        if (sec.departurePosition) {
+                            fromPos = sec.departurePosition;
+                        } else {
+                            if(c) {
+                                if(c.length > 0) {
+                                    fromPos.lon = c[0][0];
+                                    fromPos.lat = c[0][1];
+                                }
+                            }   
+                        }
+                        if(!sec.arrivalPosition) {
+                            if(c) {
+                                if(c.length > 0) {
+                                    toPos.lon = c[c.length - 1][0];
+                                    toPos.lat = c[c.length - 1][1];
+                                }
+                            }
+                        } else {
+                            toPos = sec.arrivalPosition;
+                        }
+
+                        var r = 10;
+                        if(isFirst) r = 15;
+                        L.circleMarker(fromPos, {radius: r}).addTo(self.markerLayerGroup);
+
+                        if(isLast) {
+                            L.marker(toPos).addTo(self.markerLayerGroup);                                
+                        } else {
+                            L.circleMarker(toPos, {radius: 5}).addTo(self.markerLayerGroup);
+                        }
+                        isFirst = false;
                     }
                     //self.markerLayerGroup.setStyle(markerStyle);
 
@@ -215,8 +251,11 @@
                     type: "stop_area"
                 };
 
-                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 1, function (data) {
-                    console.log(data);
+                var onError = function(errCode, errMsg) {
+
+                };
+                var onSuccess = function(data) {
+                    //console.log(data);
                     self.$setState({
                         journey: data[0]
                     });
@@ -226,7 +265,9 @@
                         self.sheetSwipeToStep.open();
                         self.sheetSwipeToStep.stepOpen();
                     });
-                });
+                };
+
+                Journeys.getJourneyBetweenStops(fromPlace, toPlace, 1, onSuccess, onError);
             },
         },
         on: {
