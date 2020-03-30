@@ -15,6 +15,7 @@ var routes = [
   },
   {
     path: '/',
+    name: 'main',
     component: MainPage,
   },
   {
