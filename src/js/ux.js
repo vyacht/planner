@@ -14,7 +14,30 @@ var Ux = {
             return "directions_walk";
         } else if (type == 'waiting') {
             return "hourglass_empty";
+        } else if (type == 'on_demand_transport') { 
+            return "local_phone";
         }
+        
+    },
+    getSectionDescription: function(type, mode) {
+        if (type == 'public_transport') {
+            if (mode == 'Train') {
+                return "Train";
+            } else if (mode == 'Bus') {
+                return "Bus";
+            } else if (mode == 'Ferry') {
+                return "Ferry";
+            }
+        } else if (type == 'transfer' || type == 'street_network') {
+            return "Walking";
+        } else if ((type == 'crow_fly') && (mode == 'walking')) {
+            return "Walking";
+        } else if (type == 'waiting') {
+            return "Waiting";
+        } else if (type == 'on_demand_transport') { 
+            return "On demand";
+        }
+        
     },
     getMaterialPlaceTypeIcon: function(type) {
         if (type == 'stop_area') {
