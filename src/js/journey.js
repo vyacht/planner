@@ -100,11 +100,11 @@ var Journeys = {
                     if(res.error.id == "date_out_of_bounds") {
                         msg = "The given date is out of bounds of the production dates of the region";
                     } else if(res.error.id == "no_origin") {
-                        msg = "Starting point seems to be outside region. No resulting journeys found.";
+                        msg = "Starting point seems to be outside region or has no stop in area. No resulting journeys found.";
                     } else if(res.error.id == "no_destination") {
-                        msg = "Destination point seems to be outside region. No resulting journeys found.";
+                        msg = "Destination point seems to be outside region or has no stop in area. No resulting journeys found.";
                     } else if(res.error.id == "no_origin_nor_destination") {
-                        msg = "Neither starting nor destination point seems to be outside region. No resulting journeys found.";
+                        msg = "Neither starting nor destination point seems to be outside region or has no stop in area. No resulting journeys found.";
                     } else if(res.error.id == "unknown_object") {
                         msg = "No resulting journeys found.";
                     }                    
