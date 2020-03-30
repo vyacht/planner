@@ -5,8 +5,14 @@ import Framework7 from 'framework7/framework7.esm.bundle.js';
 var Journeys = {
     apiVersion: "v1",
 
+    /*
     port: 9191,
     baseUrl: "http://localhost",
+    instance: "default",
+    */
+
+    port: null,
+    baseUrl: "http://vyacht-api-01.westeurope.cloudapp.azure.com",
     instance: "default",
 
     /*
@@ -42,11 +48,16 @@ var Journeys = {
         if(place.type == "stop_area") {
             return place.place.id;
         } else if (place.type == "current_position" ) {
-            //return place.place.coords.lon + ";" + place.place.coords.lat;
+            //return place.place.coord.lon + ";" + place.place.coord.lat;
             return "17.634303;59.94171";
+        } else if (place.type == "poi" ) {
+            return place.place.coord.lon + ";" + place.place.coord.lat;
+        } else if (place.type == "administrative_region" ) {
+            return place.place.coord.lon + ";" + place.place.coord.lat;
         }
+    
     },
-    getJourneyBetweenStops: function (fromPlace, toPlace, dateTime, dateTimeMode, maxCount, callback) {
+    getJourneyBetweenStops: function (fromPlace, toPlace, dateTime, dateTimeMode, maxCount, cbSuccess, cbError) {
 
         var from = [59.941710, 17.604303];
         var to = [59.725600, 17.787895];
@@ -55,6 +66,8 @@ var Journeys = {
 
         /* console.log("UPDATE JOURNEY", fromPlace, toPlace, 
             dateTime, dateTime.format("YYYYMMDDTHHmmss")); */
+
+        if(!fromPlace || !toPlace || !dateTimeMode) return;
 
         var journeyUrl = this.getUrl() + "/journeys?" +
             "from=" + self.getParamByPlaceType(fromPlace) +
@@ -85,7 +98,30 @@ var Journeys = {
             crossDomain: true,
             data: this.getData(),
             error: function(xhr, status) {
-                console.log("error: " + status);
+                
+                var msg;
+                if(xhr.response) {
+                    var res = JSON.parse(xhr.response);
+                    console.log("error: " + status, res);
+
+                    if(res.error.id == "date_out_of_bounds") {
+                        msg = "The given date is out of bounds of the production dates of the region";
+                    } else if(res.error.id == "no_origin") {
+                        msg = "Starting point seems to be outside region. No resulting journeys found.";
+                    } else if(res.error.id == "no_destination") {
+                        msg = "Destination point seems to be outside region. No resulting journeys found.";
+                    } else if(res.error.id == "no_origin_nor_destination") {
+                        msg = "Neither starting nor destination point seems to be outside region. No resulting journeys found.";
+                    } else if(res.error.id == "unknown_object") {
+                        msg = "No resulting journeys found.";
+                    }                    
+                } else {
+                    msg = "No resulting journeys found.";
+                }
+                
+                if(cbError) {
+                    cbError(status, msg);
+                }
             },
             success: function (data) {
 
@@ -163,7 +199,7 @@ var Journeys = {
                     }
                 }
 
-                if (callback) callback(jss);
+                if (cbSuccess) cbSuccess(jss);
             }
         });
     },
