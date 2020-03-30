@@ -121,12 +121,6 @@
                         "weight": 5,
                         "opacity": 0.65
                     };
-                    var markerStyle = {
-                        "color": "#4285F4",
-                        "fillColor": "#ffffff",
-                        "weight": 2,
-                        "opacity": 1
-                    };
 
                     var bbox = {},
                         sections = self.journey.sections;
@@ -141,43 +135,88 @@
                     }
                     self.tripLayer.setStyle(lineStyle);
 
+                    var htmlStrBase= "<div style='background-color:#4285F4;' class='journey-marker-pin'></div>";
+                        var htmlStrTrans = "<i class='material-icons'>" + "transfer_within_a_station" + "</i>";
+                        var htmlStrOrig = "<i class='material-icons'>" + "trip_origin" + "</i>";
+                        var htmlStrDest = "<i class='material-icons'>" + "place" + "</i>";
+
+                        // trip_origin, place
+                        var iconTrans = L.divIcon({
+                            className: 'journey-custom-div-icon',
+                            html: htmlStrBase + htmlStrTrans,
+                            iconSize: [30, 42],
+                            iconAnchor: [15, 42]
+                        });
+                        var iconOrig = L.divIcon({
+                            className: 'journey-custom-div-icon',
+                            html: htmlStrBase + htmlStrOrig,
+                            iconSize: [30, 42],
+                            iconAnchor: [15, 42]
+                        });
+                        var iconDest = L.divIcon({
+                            className: 'journey-custom-div-icon',
+                            html: htmlStrBase + htmlStrDest,
+                            iconSize: [30, 42],
+                            iconAnchor: [15, 42]
+                        });
+
                     var isFirst = true, isLast=false;
 
                     for (var s = 0; s < sections.length; s++) {
-                        //console.log(sections[s].geojson);
+
+                        var sec = sections[s];
+                        if(sec.type == "waiting") continue;
+
                         if(s == sections.length - 1) {
                             isLast = true;
                         }
                         var toPos = {lat: null, lon: null};
                         var fromPos = {lat: null, lon: null};
-                        var sec = sections[s];
+                        var midPos = {lat: null, lon: null};
+
                         var c = null;
+                        console.log("SEC: ", sec);
 
                         if(sec.geojson && sec.geojson.coordinates) {
                              c = sec.geojson.coordinates;
                         }
+                        if(c && c.length > 0) {
+                            midPos.lon = c[Math.round(c.length/2)][0];
+                            midPos.lat = c[Math.round(c.length/2)][1];
+                        }   
 
                         if (sec.departurePosition) {
                             fromPos = sec.departurePosition;
                         } else {
-                            if(c) {
-                                if(c.length > 0) {
-                                    fromPos.lon = c[0][0];
-                                    fromPos.lat = c[0][1];
-                                }
-                            }   
+                            if(c && (c.length > 0)) {
+                                fromPos.lon = c[0][0];
+                                fromPos.lat = c[0][1];
+                            }
                         }
                         if(!sec.arrivalPosition) {
-                            if(c) {
-                                if(c.length > 0) {
-                                    toPos.lon = c[c.length - 1][0];
-                                    toPos.lat = c[c.length - 1][1];
-                                }
+                            if(c && (c.length > 0)) {
+                                toPos.lon = c[c.length - 1][0];
+                                toPos.lat = c[c.length - 1][1];
                             }
                         } else {
                             toPos = sec.arrivalPosition;
                         }
+                        
+                        if(sec.type == "transfer") {
+                            L.marker(midPos, { icon: iconTrans }).addTo(self.markerLayerGroup);
+                        } else if ((sec.type == 'street_network') && (sec.mode == 'walking')) {
+                            L.marker(midPos, { icon: iconTrans }).addTo(self.markerLayerGroup);
+                        } else if ((sec.type == 'crow_fly') && (sec.mode == 'walking')) {
+                            L.marker(midPos, { icon: iconTrans }).addTo(self.markerLayerGroup);
+                        }
 
+                        if(isFirst) {
+                            L.marker(fromPos, { icon: iconOrig }).addTo(self.markerLayerGroup);
+                        } else if(isLast) {
+                            L.marker(toPos, { icon: iconDest }).addTo(self.markerLayerGroup);
+                        }
+
+                        /*
                         var r = 10;
                         if(isFirst) r = 15;
                         L.circleMarker(fromPos, {radius: r}).addTo(self.markerLayerGroup);
@@ -187,6 +226,7 @@
                         } else {
                             L.circleMarker(toPos, {radius: 5}).addTo(self.markerLayerGroup);
                         }
+                        */
                         isFirst = false;
                     }
                     //self.markerLayerGroup.setStyle(markerStyle);
@@ -307,7 +347,7 @@
             },
             pageAfterIn: function () {
                 var self = this;
-                console.log("PAGE AFTER IN JOURNEY", self.$root.selectedJourney);
+                //console.log("PAGE AFTER IN JOURNEY", self.$root.selectedJourney);
                 if (!self.mapInitialized) {
                     if (!window.L) {
                         //self.loadMapAssets();
@@ -316,7 +356,15 @@
                     self.initMap();
                 }
                 //self.getTestJourney();
-                self.journey= this.$root.selectedJourney
+
+                var self = this;
+                var app = self.$app;
+
+                if(!this.$root.selectedJourney) {
+                    app.views.main.router.navigate({name: "/"});
+                }
+                
+                self.journey= this.$root.selectedJourney;
                 
                 self.$update(() => {
                         // DOM updated

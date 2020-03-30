@@ -8,7 +8,9 @@ var Ux = {
             } else if (mode == 'Ferry') {
                 return "directions_boat";
             }
-        } else if (type == 'transfer' || type == 'street_network') {
+        } else if (type == 'transfer') {
+            return "directions_walk";
+        } else if ((type == 'street_network') && (mode == 'walking')) {
             return "directions_walk";
         } else if ((type == 'crow_fly') && (mode == 'walking')) {
             return "directions_walk";
@@ -28,7 +30,9 @@ var Ux = {
             } else if (mode == 'Ferry') {
                 return "Ferry";
             }
-        } else if (type == 'transfer' || type == 'street_network') {
+        } else if (type == 'transfer') {
+            return "Walking";
+        } else if ((type == 'street_network') && (mode == 'walking')) {            
             return "Walking";
         } else if ((type == 'crow_fly') && (mode == 'walking')) {
             return "Walking";

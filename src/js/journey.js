@@ -159,6 +159,8 @@ var Journeys = {
                             mode = ss.display_informations.commercial_mode;
                         } else if (ss.type == "crow_fly") {
                             mode = ss.mode;
+                        } else if (ss.type == "street_network") {
+                            mode = ss.mode;
                         }
 
                         var sec = {
