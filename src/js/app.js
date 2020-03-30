@@ -134,6 +134,10 @@ var app = new Framework7({
     // App routes
     routes: routes,
 
+    view: {
+        pushState: true
+    },
+
     // create a Store object for exchange of data between pages
     Store : {
         journey: {},
