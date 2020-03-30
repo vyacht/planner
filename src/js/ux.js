@@ -5,6 +5,8 @@ var Ux = {
                 return "directions_train";
             } else if (mode == 'Bus') {
                 return "directions_bus";
+            } else if (mode == 'Ferry') {
+                return "directions_boat";
             }
         } else if (type == 'transfer' || type == 'street_network') {
             return "directions_walk";
