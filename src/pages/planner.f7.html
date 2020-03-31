@@ -720,7 +720,7 @@
                     on: {
                         closed: function() {
                             var ac = this;
-                            if(!ac.value && ac.value.length == 0) return;
+                            if(!ac.value || ac.value.length == 0) return;
                             console.log("closed(" + ac.params.fromOrTo + ")", ac.value[0]);
                             self.updateValue(ac.value[0], ac.params.fromOrTo);
                         },
