@@ -309,6 +309,12 @@
     border-bottom: 2px solid; 
   }
 
+  .journey-details-header {
+    margin:12px; 
+    padding-bottom: calc(var(--f7-list-item-padding-vertical) + var(--f7-safe-area-bottom));      
+    padding-left: calc(var(--f7-list-item-padding-horizontal) + var(--f7-safe-area-left));      
+  }
+
   .journey-marker-pin {
     width: 30px;
     height: 30px;
