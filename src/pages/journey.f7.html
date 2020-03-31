@@ -107,6 +107,9 @@
                 self.tripLayer = L.geoJSON().addTo(self.mymap);
                 self.mapInitialized = true;
             },
+            style: function(feature) {
+                console.log("style: ", feature);
+            },
             drawTrip: function () {
                 var self = this;
                 if (!self.journey) {
@@ -129,11 +132,24 @@
                         //console.log("GEOJSON", sections[s].geojson);
                         var sec = sections[s];
                         if (sec.geojson) {
-                            self.tripLayer.addData(sec.geojson);
+                            //self.tripLayer.addData(sec.geojson);
+                            var style = {
+                                weight: 2,
+                                opacity: 1,
+                                color: '#BD0026',
+                                dashArray: '3',
+                                fillOpacity: 0.7
+                            };
+                            if(sec.type == "public_transport") {
+                                style.color = "#4285F4";
+                                style.weight = 5;
+                            }
+
+                            L.geoJSON(sec.geojson, {style: style}).addTo(self.tripLayer);
                             bbox = Utils.getBoundingBox(bbox, sec.geojson);
                         }
                     }
-                    self.tripLayer.setStyle(lineStyle);
+                    //self.tripLayer.setStyle(lineStyle);
 
                     var htmlStrBase= "<div style='background-color:#4285F4;' class='journey-marker-pin'></div>";
                         var htmlStrTrans = "<i class='material-icons'>" + "transfer_within_a_station" + "</i>";
@@ -143,7 +159,7 @@
                         // trip_origin, place
                         var iconTrans = L.divIcon({
                             className: 'journey-custom-div-icon',
-                            html: htmlStrBase + htmlStrTrans,
+                            html: "<div style='background-color:#BD0026;' class='journey-marker-pin'></div>" + htmlStrTrans,
                             iconSize: [30, 42],
                             iconAnchor: [15, 42]
                         });
@@ -216,17 +232,11 @@
                             L.marker(toPos, { icon: iconDest }).addTo(self.markerLayerGroup);
                         }
 
-                        /*
-                        var r = 10;
-                        if(isFirst) r = 15;
-                        L.circleMarker(fromPos, {radius: r}).addTo(self.markerLayerGroup);
-
-                        if(isLast) {
-                            L.marker(toPos).addTo(self.markerLayerGroup);                                
-                        } else {
-                            L.circleMarker(toPos, {radius: 5}).addTo(self.markerLayerGroup);
+                        if(sec.type == "public_transport") {
+                            L.circleMarker(fromPos, {radius: 3}).addTo(self.markerLayerGroup);
+                            L.circleMarker(toPos, {radius: 3}).addTo(self.markerLayerGroup);
                         }
-                        */
+
                         isFirst = false;
                     }
                     //self.markerLayerGroup.setStyle(markerStyle);

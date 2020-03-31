@@ -140,7 +140,7 @@
   :root {
     --journey-transport-chip-padding: 8px;
     --journey-graphics-size: 8px;
-    --journey-graphics-color:  rgb(247, 68, 14);
+    --journey-graphics-color:  #4285F4;
 
     --f7-list-item-padding-horizontal: 8px;
     --f7-list-media-item-padding-horizontal: 8px;
@@ -190,7 +190,7 @@
     left: 50%; right: 50%;
 
     border-radius: var(--journey-graphics-size);
-    background: rgb(247, 68, 14);
+    background: var(--journey-graphics-color);
   }
 
   .col-journey-graphics-top {
@@ -313,7 +313,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50% 50% 50% 0;
-    background: #c30b82;
+    background: var(--journey-graphics-color);
     position: absolute;
     transform: rotate(-45deg);
     left: 50%;
