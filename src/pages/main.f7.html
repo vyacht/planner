@@ -320,7 +320,7 @@
                     latLng2 = Utils.destination(latLng, 225, radius);
 
                 var bb = L.latLngBounds(latLng2, latLng1);
-                console.log(bb, latLng2, latLng1);
+                //console.log(bb, latLng2, latLng1);
                 self.mymap.fitBounds(bb, {
                     paddingTopLeft: [0, 0],
                     paddingBottomRight: [0, paddingBottom] // its x, y
@@ -331,7 +331,7 @@
                 var self = this;
                 var app = self.$app;
 
-                console.log("PLACE: ", place)
+                //console.log("PLACE: ", place)
 
                 // place can be anything
                 var pos = L.latLng(place.coord.lat, place.coord.lon);
@@ -459,7 +459,7 @@
         on: {
             pageInit: function () {
 
-                console.log("PAGE INIT");
+                //console.log("PAGE INIT");
 
 
                 var self = this;
@@ -477,6 +477,7 @@
                         limit: 20, //limit to 20 results
                         typeahead: false,
                         dropdownPlaceholderText: '',
+                        closeOnSelect: true,
 
                         //value: 'Knivsta station (Knivsta)',// this.$root.toJourney?this.$root.toJourney:'',
 
@@ -527,7 +528,7 @@
                             // Show Preloader
                             autocomplete.preloaderShow();
                             Journeys.getPlaces(query, 10, function (places) {
-                                //console.log();
+                                //console.log("PLACES", places);
                                 render(places);
                                 // Hide Preoloader
                                 autocomplete.preloaderHide();
@@ -536,7 +537,7 @@
                         on: {
                             change: function (value) {
 
-                                console.log(value);       
+                                //console.log("SELECTED", value);       
                                 
                                 if(!value || value.length == 0) return;
                                 var v = value[0];
