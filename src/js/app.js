@@ -134,17 +134,12 @@ var app = new Framework7({
     // App routes
     routes: routes,
 
-    view: {
-        pushState: true
-    },
-
     // create a Store object for exchange of data between pages
     Store : {
         journey: {},
         journeyTo : {},
         journeyFrom : {},
     },
-
     // Input settings
     input: {
         scrollIntoViewOnFocus: Framework7.device.cordova && !Framework7.device.electron,
@@ -161,6 +156,9 @@ var app = new Framework7({
             if (f7.device.cordova) {
                 // Init cordova APIs (see cordova-app.js)
                 cordovaApp.init(f7);
+            } else {
+                // activate browser history
+                f7.params.view.pushState = true;
             }
         },
     },
