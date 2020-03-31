@@ -97,7 +97,9 @@ var Journeys = {
                     var res = JSON.parse(xhr.response);
                     console.log("error: " + status, res);
 
-                    if(res.error.id == "date_out_of_bounds") {
+                    if(!res.error || !res.error.id) {
+                        msg = "No resulting journeys found.";
+                    } else if(res.error.id == "date_out_of_bounds") {
                         msg = "The given date is out of bounds of the production dates of the region";
                     } else if(res.error.id == "no_origin") {
                         msg = "Starting point seems to be outside region or has no stop in area. No resulting journeys found.";
