@@ -81,6 +81,34 @@
             }
         },
         methods: {
+            highlightFeature: function(e) {
+                var layer = e.target;
+
+                layer.setStyle({
+                    weight: 5,
+                    color: '#666',
+                    dashArray: '',
+                    fillOpacity: 0.7
+                });
+
+                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    layer.bringToFront();
+                }
+            },
+            resetHighlight: function(e) {
+                this.tripLayer.resetStyle(e.target);
+            },
+            zoomToFeature: function(e) {
+                this.mymap.fitBounds(e.target.getBounds());
+            },
+            onEachFeature: function(feature, layer) {
+                var self = this;
+                layer.on({
+                    mouseover: self.highlightFeature,
+                    mouseout: self.resetHighlight,
+                    click: self.zoomToFeature
+                });
+            },
             initMap: function () {
                 var self = this;
                 self.mymap = L.map(self.$el.find('.demo-map-container')[0], {
@@ -107,14 +135,14 @@
                 self.mapInitialized = true;
             },
             style: function(feature) {
-                console.log("style: ", feature);
+                //console.log("style: ", feature);
             },
             drawTrip: function () {
                 var self = this;
                 if (!self.journey) {
                     return;
                 }
-                console.log("DRAW", self.journey);
+                //console.log("DRAW", self.journey);
 
                 if (self.tripLayer) {
                     //console.log("adding trip layer");
@@ -144,7 +172,10 @@
                                 style.weight = 5;
                             }
 
-                            L.geoJSON(sec.geojson, {style: style}).addTo(self.tripLayer);
+                            L.geoJSON(sec.geojson, {
+                                style: style,
+                                onEachFeature: self.onEachFeature
+                            }).addTo(self.tripLayer);
                             bbox = Utils.getBoundingBox(bbox, sec.geojson);
                         }
                     }
@@ -190,7 +221,7 @@
                         var midPos = {lat: null, lon: null};
 
                         var c = null;
-                        console.log("SEC: ", sec);
+                        //console.log("SEC: ", sec);
 
                         if(sec.geojson && sec.geojson.coordinates) {
                              c = sec.geojson.coordinates;
