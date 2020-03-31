@@ -415,19 +415,50 @@
                     },
                 });
             },
+            clearJourney: function() {
+                var self = this;
+                self.journeys= null;
+                self.journeysError = null;
+                self.$update();
+            },
+            isSamePlace: function() {
+
+                var self = this;
+
+                if(!self.toPlace) return false;
+                if(!self.fromPlace) return false;
+                if(self.toPlace.type != self.fromPlace.type) return false;
+
+                if(self.toPlace.type == "current_position") {
+                    return true;
+                } 
+                if((self.toPlace.type == "stop_area") || (self.toPlace.type == "poi")) {
+                    if(self.toPlace.place.id == self.fromPlace.place.id) {
+                        return true;
+                    }
+                }
+
+                return false;
+            },
             updateJourneys: function () {
 
                 var self = this;
                 var app = self.$app;
 
-                //console.log("update Journeys()", self.fromPlace, self.toPlace);
+                console.log("update Journeys()", self.fromPlace, self.toPlace);
 
                 if (!self.toSet || !self.fromSet) {
-                    self.journeys= null;
-                    self.journeysError = null;
-                    self.$update();
+                    self.clearJourney();
                     return;
                 }
+                if(self.isSamePlace()) {                    
+                    self.$setState({
+                        journeysError: "Origin and destination are the same place. Not searching journey.",
+                        journeys: null
+                    });
+                    return;
+                }
+
                 app.preloader.show();
                 setTimeout(function () {
                     app.preloader.hide();
@@ -443,6 +474,7 @@
                 };
 
                 var onSuccess = function(data) {
+                    console.log("update Journeys() success");
                     self.$setState({
                         journeys: data,
                         journeysError: null
@@ -542,6 +574,61 @@
                 });
 
             },
+            /* called from autocomplete when new value is selected */
+            updateValue: function(newValue, fromOrTo) {
+                
+                var self = this;
+
+                if(newValue.embedded_type == 'current_position') {
+                    var onError = function(error) {
+                        console.error("error fetching position: " + error.code);
+                        self.geolocationNotification.open();
+                        self.onclearSearchBox(fromOrTo);
+                    };
+
+                    var onSuccess = function(data) {
+
+                        var place = {
+                            type: "current_position",
+                            place: data.place
+                        };
+                        self.setPlace(place, fromOrTo);
+
+                        // will call render function 
+                        self.updateJourneys();
+                    };
+
+                    Utils.getPosition(onSuccess, onError);
+                    return;
+
+                } 
+                var place = null;
+
+                if(newValue.embedded_type == 'stop_area') {
+                    place = {
+                        place: newValue.stop_area,
+                        type: "stop_area"
+                    };
+                } else if(newValue.embedded_type == 'poi') {
+                    place = {
+                        place: newValue.poi,
+                        type: "poi"
+                    };
+                } else if(newValue.embedded_type == 'administrative_region') {
+                    place = {
+                        place: newValue.administrative_region,
+                        type: "poi"
+                    };
+                } else {
+                    self.resetPlace(fromOrTo);
+                    return;
+                }
+
+                self.setPlace(place, fromOrTo);
+                // will call render function 
+                self.updateJourneys();
+
+            }
         },
         on: {
             pageInit: function () {
@@ -631,63 +718,17 @@
                         });
                     },
                     on: {
+                        closed: function() {
+                            var ac = this;
+                            if(!ac.value && ac.value.length == 0) return;
+                            console.log("closed(" + ac.params.fromOrTo + ")", ac.value[0]);
+                            self.updateValue(ac.value[0], ac.params.fromOrTo);
+                        },
                         change: function (value) {
 
                             var ac = this;
-
-
                             if(!value && value.length == 0) return;
                             console.log("change(" + ac.params.fromOrTo + ")", value[0]);
-
-                            if(value[0].embedded_type == 'current_position') {
-                                var onError = function(error) {
-                                    console.error("error fetching position: " + error.code);
-                                    self.geolocationNotification.open();
-                                    self.onclearSearchBox(ac.params.fromOrTo);
-                                };
-
-                                var onSuccess = function(data) {
-
-                                    var place = {
-                                        type: "current_position",
-                                        place: data.place
-                                    };
-                                    self.setPlace(place, ac.params.fromOrTo);
-
-                                    // will call render function 
-                                    self.updateJourneys();
-                                };
-
-                                Utils.getPosition(onSuccess, onError);
-                                return;
-
-                            } 
-                            var place = null;
-
-                            if(value[0].embedded_type == 'stop_area') {
-                                place = {
-                                    place: value[0].stop_area,
-                                    type: "stop_area"
-                                };
-                            } else if(value[0].embedded_type == 'poi') {
-                                place = {
-                                    place: value[0].poi,
-                                    type: "poi"
-                                };
-                            } else if(value[0].embedded_type == 'administrative_region') {
-                                place = {
-                                    place: value[0].administrative_region,
-                                    type: "poi"
-                                };
-                            } else {
-                                self.resetPlace(ac.params.fromOrTo);
-                                return;
-                            }
-
-                            self.setPlace(place, ac.params.fromOrTo);
-                            // will call render function 
-                            self.updateJourneys();
-
                         }
                     }
                 };
