@@ -12,7 +12,7 @@ var Journeys = {
     */
 
     port: null,
-    baseUrl: "http://vyacht-api-01.westeurope.cloudapp.azure.com",
+    baseUrl: "https://vyacht-api-01.westeurope.cloudapp.azure.com",
     instance: "default",
 
     // assemble the URL
