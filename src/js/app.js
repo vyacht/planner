@@ -127,8 +127,8 @@ var app = new Framework7({
 
     root: '#app', // App root element
     component: App, // App main component
-    id: 'io.framework7.myapp', // App bundle ID
-    name: 'gotland', // App name
+    id: 'www.vyacht.net', // App bundle ID
+    name: 'vy planr', // App name
     theme: 'auto', // Automatic theme detection
 
     // App routes
@@ -153,12 +153,15 @@ var app = new Framework7({
     on: {
         init: function () {
             var f7 = this;
+            console.log(f7.device);
             if (f7.device.cordova) {
                 // Init cordova APIs (see cordova-app.js)
                 cordovaApp.init(f7);
             } else {
                 // activate browser history
                 f7.params.view.pushState = true;
+                f7.params.view.pushStateRoot= '/planr';
+                f7.params.view.pushStateSeparator= '';
             }
         },
     },
